@@ -2,9 +2,13 @@
 // — Вызывает соответствующий метод сервиса (ITeamService, IUserService и т. д.).
 // — Возвращает IActionResult с нужным HTTP-кодом и ответным DTO.
 
+using Microsoft.AspNetCore.Mvc;
+
 namespace Server.Controllers
 {
-    public class CostController
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CostController : ControllerBase
     {
     }
 }

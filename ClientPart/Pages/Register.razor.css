@@ -1,0 +1,192 @@
+﻿/* 1) Общий контейнер на весь экран, центрирует окно */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* 2) Окно регистрации: 800×700, скругления, тень, фон */
+.login-window {
+    width: 800px;
+    height: 700px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3) Контейнер: две колонки */
+.login-content {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 4) Левая колонка (копия для иллюстрации) */
+.login-left {
+    flex: 0 0 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.sign-in-box {
+    width: 100%;
+    background-color: #8dd1fb;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem;
+    box-sizing: border-box;
+    max-height: 100%;
+    overflow: auto;
+}
+
+    .sign-in-box h3 {
+        margin: 0 0 1rem;
+        font-weight: bold;
+        font-size: 3rem;
+        color: #ffffff;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-align: center;
+    }
+
+    .sign-in-box p {
+        margin: 0 0 4rem;
+        font-weight: bold;
+        font-size: 0.85rem;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        color: rgba(255,255,255,0.95);
+        line-height: 1.4;
+        text-align: center;
+    }
+
+    .sign-in-box img {
+        width: 100%;
+        height: auto;
+        margin: 0 0 5rem;
+        border-radius: 0.5rem;
+    }
+
+/* 5) Правая колонка: центрируем по высоте */
+.login-right {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    gap: 1.5rem;
+}
+
+/* 5.1) Заголовок Register */
+.signin-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #003eeb;
+    text-align: center;
+}
+
+/* 5.2) Поля ввода */
+.form-field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+    .form-field label {
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+        color: #003eeb;
+        font-weight: bold;
+    }
+
+    .form-field input {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: rgba(173,216,230,0.3);
+        border: none;
+        border-radius: 1.5rem;
+        box-sizing: border-box;
+        font-size: 1rem;
+    }
+
+/* 5.3) Кнопка регистрации */
+.btn-submit {
+    background-color: #003eeb;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 2rem;
+    font-size: 1rem;
+    align-self: center;
+    cursor: pointer;
+}
+
+    .btn-submit:hover {
+        opacity: 0.9;
+    }
+
+/* 6) “Or Register With” — теперь без линий, с уменьшенным отступом */
+.or-separator {
+    width: 100%;
+    text-align: center;
+    margin: 0.75rem 0; /* было 1.5rem */
+}
+
+    .or-separator span {
+        font-size: 0.9rem;
+        color: #8dd1fb;
+    }
+
+/* 7) Иконка Google — уменьшена и отступ снизу сокращён */
+.social-login {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.75rem; /* было 1.5rem */
+}
+
+    .social-login img {
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+.signup-prompt {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .signup-prompt span {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #003eeb;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+}

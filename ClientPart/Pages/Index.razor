@@ -1,3 +1,115 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+<!--
+Корневой контейнер страницы.
+Внутри три формы-секции: Top, Middle и Bottom.
+-->
+<div class="layout">
+
+    <!-- ================= Top Section ================= -->
+    <form class="form-section top-section">
+        <!--
+        Контейнер для логотипа, названия и кнопок.
+        Используем flex, чтобы располагать элементы в ряд.
+        -->
+        <div class="top-content">
+
+            <!-- 1) Логотип слева -->
+            <div class="logo-area">
+                <!--
+                Рендерим ваш логотип.
+                Позже можно заменить на реальное изображение.
+                -->
+                <img src="/image/Logo.png" alt="Logo" />
+            </div>
+
+            <!-- 2) Название приложения -->
+            <div class="title-area">
+                <span>TeamProfit</span>
+            </div>
+
+            <!-- 3) Блок кнопок авторизации -->
+            <div class="auth-area">
+                <!-- Регистрация -->
+                <button type="button" class="btn-auth signup" @onclick="GoToRegister">Sign up</button>
+                <!-- Вход – переходим на страницу /login -->
+                <button type="button" class="btn-auth signin" @onclick="GoToLogin">Sign in</button>
+            </div>
+
+        </div>
+    </form>
+
+
+
+    <!-- ================ Middle Section ================ -->
+    <form class="form-section middle-section">
+        <!-- Обёртка для двух колонок -->
+        <div class="middle-content">
+
+            <!-- ----- Первая колонка ----- -->
+            <div class="column column-left">
+                <!-- 1) Синий прямоугольник с текстом -->
+                <div class="inner-box">
+                    <!-- TODO: замените на свой текст -->
+                    <span>TeamProfit is an application designedfor seamless monitoring and efficient managementofall processes related to yourerowdfunding campaigns.</span>
+                </div>
+                <!-- 2) Большая картинка-заглушка -->
+                <div class="image-box">
+                    <img src="/image/HelloWindowsPic1.png" alt="Placeholder 1" />
+                </div>
+            </div>
+
+            <!-- ----- Вторая колонка ----- -->
+            <div class="column column-right">
+                <!-- 1) Большая картинка-заглушка -->
+                <div class="image-box">
+                    <img src="/image/HelloWindowsPic2.png" alt="Placeholder 2" />
+                </div>
+                <!-- 2) Синий прямоугольник с текстом -->
+                <div class="inner-box">
+                    <!-- TODO: замените на свой текст -->
+                    <span>TeamProfit is aboutspeed,simplicity,and efficiency.</span>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
+
+    <!-- ================ Bottom Section ================ -->
+    <form class="form-section bottom-section">
+        <!-- flex-контейнер для кнопки и иконок -->
+        <div class="bottom-content">
+
+            <!-- 1) Кнопка выбора языка слева -->
+            <button type="button" class="btn-auth lang-btn">
+                English
+            </button>
+
+            <!-- 2) Блок социконок справа -->
+            <div class="social-area">
+                <!-- в будущем каждую картинку будет оборачивать <a> -->
+                <img src="/image/telegram.png" alt="Social 1" class="social-icon" />
+                <img src="/image/vk.png" alt="Social 2" class="social-icon" />
+                <img src="/image/GitHub.png" alt="Social 3" class="social-icon" />
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    /// <summary>
+    /// При клике на Sign in — переходим на /login
+    /// </summary>
+    void GoToLogin()
+    {
+        NavigationManager.NavigateTo("login");
+    }
+    void GoToRegister()
+    {
+        NavigationManager.NavigateTo("register");
+    }
+}

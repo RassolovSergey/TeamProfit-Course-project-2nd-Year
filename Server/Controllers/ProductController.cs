@@ -1,6 +1,10 @@
-﻿namespace Server.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Server.Controllers
 {
-    public class ProductController
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductController : ControllerBase
     {
     }
 }

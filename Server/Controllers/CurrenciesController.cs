@@ -1,6 +1,10 @@
-﻿namespace Server.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Server.Controllers
 {
-    public class CurrenciesController
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CurrenciesController : ControllerBase
     {
     }
 }

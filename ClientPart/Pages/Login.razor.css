@@ -1,0 +1,205 @@
+﻿/* 1) Общий контейнер на весь экран, центрирует окно */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* 2) Окно входа: 800×700, скругления, тень, фон */
+.login-window {
+    width: 800px;
+    height: 700px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3) Контейнер контента внутри окна: два столбика + gap */
+.login-content {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 4) Левая колонка: окно входа */
+.login-left {
+    flex: 0 0 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* 5) Окно-обёртка для текста и картинки (левая колонка) */
+.sign-in-box {
+    width: 100%;
+    background-color: #8dd1fb;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem;
+    box-sizing: border-box;
+    max-height: 100%;
+    overflow: auto;
+}
+
+    /* 5.1) Заголовок внутри sign-in-box (Welcome!) */
+    .sign-in-box h3 {
+        margin: 0 0 1rem;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 3.5rem;
+        color: #ffffff; /* белый */
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-align: center;
+    }
+
+    /* 5.2) Параграф внутри sign-in-box */
+    .sign-in-box p {
+        margin: 0 0 4rem;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 0.85rem;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        color: rgba(255, 255, 255, 0.95);
+        line-height: 1.4;
+        text-align: center;
+    }
+
+    /* 5.3) Картинка внутри sign-in-box */
+    .sign-in-box img {
+        width: 100%;
+        height: auto;
+        margin: 0 0 5rem;
+        border-radius: 0.5rem;
+    }
+
+/* 6) Правый столбик: форма входа, центрируем по высоте */
+.login-right {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    gap: 1.5rem;
+}
+
+/* 6.1) Заголовок Signing in */
+.signin-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #003eeb;
+    text-align: center;
+}
+
+/* 6.2) Поле ввода: общий контейнер */
+.form-field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+    /* 6.2.1) Метка над полем */
+    .form-field label {
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+        color: #003eeb;
+        font-weight: bold;
+        text-shadow: none;
+    }
+
+    /* 6.2.2) Само поле ввода */
+    .form-field input {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: rgba(173, 216, 230, 0.3);
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: none;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+
+/* 6.3) Кнопка отправки формы — btn-submit */
+.btn-submit {
+    background-color: #003eeb;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 2rem;
+    box-shadow: none;
+    font-size: 1rem;
+    align-self: center;
+    cursor: pointer;
+}
+
+    .btn-submit:hover {
+        opacity: 0.9;
+    }
+
+/* 7) Разделитель “Or Sign In With” (только текст, без линий) */
+.or-separator {
+    width: 100%;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+    .or-separator span {
+        font-size: 0.9rem;
+        color: #8dd1fb;
+        /* убраны ::before и ::after, остался только сам текст */
+    }
+
+/* 8) Иконка социальной авторизации (уменьшена на 30%) */
+.social-login {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+    .social-login img {
+        width: 34px; /* было 48px, уменьшено на 30% */
+        height: 34px;
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+/* 9) Подсказка про регистрацию */
+.signup-prompt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .signup-prompt span {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #003eeb;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+}

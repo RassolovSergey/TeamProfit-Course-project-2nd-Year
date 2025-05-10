@@ -26,3 +26,21 @@
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+/* 1. Убираем отступы у <html> и <body>, чтобы фон занимал всю страницу */
+html, body {
+    height: 100%;
+    margin: 0;
+    /* 2) Отключаем скролл по всей странице */
+    overflow: hidden;
+}
+
+/* 2. Градиентный фон на весь экран */
+body {
+    /* от тёмно-синего к небесно-голубому */
+    background: linear-gradient( 135deg, #1e3c72 0%, #2a5298 50%, #6dd5ed 100% );
+    /* зафиксировать фон при прокрутке, если страница будет длинной */
+    background-attachment: fixed;
+}
+
+

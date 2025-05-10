@@ -9,13 +9,6 @@ namespace Server.Services.Implementations
     /// </summary>
     public class TeamService : ITeamService
     {
-
-        private readonly ITeamRepository _repo;
-        public TeamService(ITeamRepository repo)
-        {
-            _repo = repo; // репозиторий данных
-        }
-
         public Task<TeamDto> CreateAsync(CreateTeamDto dto)
         {
             throw new NotImplementedException();
@@ -26,18 +19,9 @@ namespace Server.Services.Implementations
             throw new NotImplementedException();
         }
 
-        public async Task<List<TeamDto>> GetAllAsync()
+        public Task<List<TeamDto>> GetAllAsync()
         {
-            var teams = await _repo.GetAllAsync(); // Получаем сущности Team
-
-            // Маппим в DTO
-            return teams.Select(t => new TeamDto
-            {
-                Id = t.Id,
-                Name = t.Name,
-                AdminId = t.AdminId,
-                MembersCount = t.Users?.Count ?? 0
-            }).ToList();
+            throw new NotImplementedException();
         }
 
         public Task<TeamDto?> GetByIdAsync(int id)

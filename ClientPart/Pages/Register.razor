@@ -1,0 +1,72 @@
+﻿@page "/register"
+@using Microsoft.AspNetCore.Components.Routing
+
+<!--
+  Контейнер по центру экрана, копия логики Login.razor
+-->
+<div class="login-container">
+    <div class="login-window">
+        <div class="login-content">
+
+            <!-- Левая колонка (копия sign-in) -->
+            <div class="login-left">
+                <div class="sign-in-box">
+                    <h3>Create Account</h3>
+                    <p>
+                        In the TeamProfit app, you can observe, analyze,<br />
+                        and manage your project.
+                    </p>
+                    <img src="/image/picSigningIn.png" alt="Illustration" />
+                </div>
+            </div>
+
+            <!-- Правая колонка: форма регистрации -->
+            <div class="login-right">
+                <!-- Заголовок -->
+                <h3 class="signin-title">Sign Up</h3>
+
+                <!-- Username -->
+                <div class="form-field">
+                    <label for="reg-username">Username:</label>
+                    <input id="reg-username" type="text" />
+                </div>
+
+                <!-- E-mail -->
+                <div class="form-field">
+                    <label for="reg-email">E-mail:</label>
+                    <input id="reg-email" type="text" />
+                </div>
+
+                <!-- Password -->
+                <div class="form-field">
+                    <label for="reg-password">Password:</label>
+                    <input id="reg-password" type="password" />
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-field">
+                    <label for="reg-confirm-password">Confirm Password:</label>
+                    <input id="reg-confirm-password" type="password" />
+                </div>
+
+                <!-- Кнопка регистрации -->
+                <button type="button" class="btn-submit">Sign Up</button>
+
+                <!-- Разделитель и соц-вход -->
+                <div class="or-separator">
+                    <span>Or Register With</span>
+                </div>
+                <div class="social-login">
+                    <img src="/image/IconGoogle.png" alt="Google Sign In" />
+                </div>
+
+                <!-- Подсказка “Already have an account?” и ссылка -->
+                <div class="signup-prompt">
+                    <span>Already have an account?</span>
+                    <!-- Навигационная ссылка на /login -->
+                    <NavLink href="/login" class="btn-link">Sign In</NavLink>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

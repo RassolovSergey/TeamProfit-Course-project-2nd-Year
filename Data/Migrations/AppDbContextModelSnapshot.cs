@@ -229,7 +229,7 @@ namespace Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CurrencyId")
+                    b.Property<int?>("CurrencyId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Email")
@@ -372,8 +372,7 @@ namespace Data.Migrations
                     b.HasOne("Data.Entities.Currency", "Currency")
                         .WithMany("Users")
                         .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Currency");
                 });

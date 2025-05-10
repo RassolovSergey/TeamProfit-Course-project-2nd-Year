@@ -42,7 +42,7 @@ namespace Data.Entities
 
 
         // Основная валюта
-        public int CurrencyId { get; set; }
+        public int? CurrencyId { get; set; }
         public Currency? Currency { get; set; }
 
 
