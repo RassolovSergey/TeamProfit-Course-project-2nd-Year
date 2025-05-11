@@ -1,29 +1,154 @@
 ﻿@page "/main"
 
-<!-- Контейнер на весь экран, центрирует главный блок -->
 <div class="main-container">
     <div class="main-box">
 
-        <!-- Левый столбец — 30% ширины -->
+        <!-- Левый столбец — 25% ширины -->
         <div class="main-col-left">
             <div class="side-window">
-                <!-- 1) Верхняя зона: 20% -->
+                <!-- Верхняя зона: 20% -->
                 <div class="side-top">
-                    <!-- сюда можно поместить заголовок или навигацию -->
+                    <div class="user-info">
+                        <img src="/image/Avatar.png" alt="User Avatar" class="avatar" />
+                        <span class="user-name">Rassolov Sergey</span>
+                        <span class="user-id">Id: 00001</span>
+                    </div>
                 </div>
-                <!-- 2) Нижняя зона: 80% -->
+
+                <!-- Нижняя зона: 80% -->
                 <div class="side-bottom">
                     <div class="inner-light-window">
-                        <!-- содержимое нижнего окна -->
+
+                        <!-- Mode-селектор -->
+                        <div class="mode-selector">
+                            <span class="mode-label">Mode:</span>
+                            <div class="mode-buttons">
+                                <button class="@GetModeBtnClass(true)" @onclick="() => SetMode(true)">Admin</button>
+                                <button class="@GetModeBtnClass(false)" @onclick="() => SetMode(false)">Member</button>
+                            </div>
+                        </div>
+
+                        <!-- Your Project -->
+                        <div class="project-selector">
+                            <span class="section-title">Your Project:</span>
+                            <div class="projects-list">
+                                @foreach (var project in projects)
+                                {
+                                    <button class="@GetProjectBtnClass(project.Id)"
+                                            @onclick="() => SelectProject(project.Id)">
+                                        @project.Name
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Filter Section -->
+                        <div class="filter-selector">
+                            <button class="@GetFilterBtnClass(FilterType.Planned)"
+                                    @onclick="() => SetFilter(FilterType.Planned)">
+                                Planned Projects
+                            </button>
+                            <button class="@GetFilterBtnClass(FilterType.Current)"
+                                    @onclick="() => SetFilter(FilterType.Current)">
+                                Current Projects
+                            </button>
+                            <button class="@GetFilterBtnClass(FilterType.Completed)"
+                                    @onclick="() => SetFilter(FilterType.Completed)">
+                                Completed Projects
+                            </button>
+                        </div>
+
+                        <!-- Join the project -->
+                        <div class="join-section">
+                            <span class="join-label">Join the project</span>
+                            <input type="text"
+                                   id="join-project"
+                                   class="join-input"
+                                   placeholder="Id Project" />
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Правый столбец — 70% ширины -->
+        <!-- Правый столбец — 75% ширины -->
         <div class="main-col-right">
-            <!-- сюда основной контент приложения -->
+
+            <!-- Верхняя зона: 10% высоты -->
+            <div class="right-top">
+                <div class="overview-block">
+                    <div class="overview-item">Admin</div>
+                    <div class="overview-item">Type: Planned</div>
+                    <div class="overview-item">Completed</div>
+                </div>
+            </div>
+
+            <!-- Нижняя зона: 90% высоты -->
+            <div class="right-bottom">
+                <!-- 1) Три секции 30/40/40 по высоте -->
+                <div class="rb-section rb-top30">
+                    <!-- 2) Внутри первой: 70/30 по ширине -->
+                    <div class="rb-top30-left">
+                        <!-- 3) Левая часть: 50/50 по высоте -->
+                        <div class="rb-a50"><div class="rb-block">ProjectName</div></div>
+                        <div class="rb-a50"><div class="rb-block">Team</div></div>
+                    </div>
+                    <div class="rb-top30-right">
+                        <div class="rb-block">Backers</div>
+                    </div>
+                </div>
+
+                <div class="rb-section rb-mid40">
+                    <!-- 4) Средняя секция: 50/50 по ширине -->
+                    <div class="rb-b50"><div class="rb-block">Income</div></div>
+                    <div class="rb-b50"><div class="rb-block">Expenses</div></div>
+                </div>
+
+                <div class="rb-section rb-bot40">
+                    <!-- 5) Нижняя секция: 50/50 по ширине -->
+                    <div class="rb-c50-left"><div class="rb-block">Project profit</div></div>
+                    <div class="rb-c50-right">
+                        <!-- 6) Правая часть: три равные части по высоте -->
+                        <div class="rb-c-right">
+                            <div class="rb-c-right-item"><div class="rb-block">Taxes /Commission</div></div>
+                            <div class="rb-c-right-item"><div class="rb-block">Your plan</div></div>
+                            <div class="rb-c-right-item"><div class="rb-block">Your profit</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
 </div>
+
+@code {
+    // Mode
+    bool isAdminMode = true;
+    void SetMode(bool admin) => isAdminMode = admin;
+    string GetModeBtnClass(bool admin)
+      => admin == isAdminMode ? "mode-btn selected" : "mode-btn";
+
+    // Your Project
+    int? selectedProjectId;
+    List<Project> projects = new()
+  {
+    new Project { Id = 1, Name = "Project Name 1" },
+    new Project { Id = 2, Name = "Project Name 2" },
+    new Project { Id = 3, Name = "Project Name 3" },
+  };
+    void SelectProject(int id) => selectedProjectId = id;
+    string GetProjectBtnClass(int id)
+      => id == selectedProjectId ? "project-item selected" : "project-item";
+
+    // Filter
+    enum FilterType { Planned, Current, Completed }
+    FilterType selectedFilter = FilterType.Planned;
+    void SetFilter(FilterType type) => selectedFilter = type;
+    string GetFilterBtnClass(FilterType type)
+      => type == selectedFilter ? "filter-btn selected" : "filter-btn";
+
+    class Project { public int Id { get; set; } public string Name { get; set; } }
+}
