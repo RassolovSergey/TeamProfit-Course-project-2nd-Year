@@ -1,9 +1,7 @@
 ﻿@page "/register"
 @using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
 
-<!--
-  Контейнер по центру экрана, копия логики Login.razor
--->
 <div class="login-container">
     <div class="login-window">
         <div class="login-content">
@@ -25,34 +23,38 @@
                 <!-- Заголовок -->
                 <h3 class="signin-title">Sign Up</h3>
 
-                <!-- Username -->
+                <!-- Поле Login -->
                 <div class="form-field">
-                    <label for="reg-username">Username:</label>
-                    <input id="reg-username" type="text" />
+                    <label for="reg-login">Login:</label>
+                    <input id="reg-login" type="text" />
                 </div>
 
-                <!-- E-mail -->
+                <!-- Поле E-mail -->
                 <div class="form-field">
                     <label for="reg-email">E-mail:</label>
                     <input id="reg-email" type="text" />
                 </div>
 
-                <!-- Password -->
+                <!-- Поле Password -->
                 <div class="form-field">
                     <label for="reg-password">Password:</label>
                     <input id="reg-password" type="password" />
                 </div>
 
-                <!-- Confirm Password -->
+                <!-- Поле Confirm Password -->
                 <div class="form-field">
                     <label for="reg-confirm-password">Confirm Password:</label>
                     <input id="reg-confirm-password" type="password" />
                 </div>
 
-                <!-- Кнопка регистрации -->
-                <button type="button" class="btn-submit">Sign Up</button>
+                <!-- Кнопка регистрации: теперь переходит на /login -->
+                <button type="button"
+                        class="btn-submit"
+                        @onclick="GoToLogin">
+                    Sign Up
+                </button>
 
-                <!-- Разделитель и соц-вход -->
+                <!-- Разделитель “Or Register With” -->
                 <div class="or-separator">
                     <span>Or Register With</span>
                 </div>
@@ -60,13 +62,20 @@
                     <img src="/image/IconGoogle.png" alt="Google Sign In" />
                 </div>
 
-                <!-- Подсказка “Already have an account?” и ссылка -->
+                <!-- Подсказка “Already have an account?” и ссылка на вход -->
                 <div class="signup-prompt">
                     <span>Already have an account?</span>
-                    <!-- Навигационная ссылка на /login -->
                     <NavLink href="/login" class="btn-link">Sign In</NavLink>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
+@code {
+    void GoToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

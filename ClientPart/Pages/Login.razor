@@ -1,5 +1,6 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
 
 <div class="login-container">
     <div class="login-window">
@@ -22,6 +23,11 @@
                 <h3 class="signin-title">Signing in</h3>
 
                 <div class="form-field">
+                    <label for="login">Login:</label>
+                    <input id="login" type="text" />
+                </div>
+
+                <div class="form-field">
                     <label for="email">E-mail:</label>
                     <input id="email" type="text" />
                 </div>
@@ -31,19 +37,18 @@
                     <input id="password" type="password" />
                 </div>
 
-                <button type="button" class="btn-submit">Signing in</button>
+                <!-- 1) Навигация на /main -->
+                <button type="button"
+                        class="btn-submit"
+                        @onclick="GoToMain">
+                    Signing in
+                </button>
 
-                <!-- Разделитель “Or Sign In With” -->
-                <div class="or-separator">
-                    <span>Or Sign In With</span>
-                </div>
-
-                <!-- Иконка Google -->
+                <!-- Остальной код без изменений… -->
+                <div class="or-separator"><span>Or Sign In With</span></div>
                 <div class="social-login">
                     <img src="/image/IconGoogle.png" alt="Google Sign In" />
                 </div>
-
-                <!-- Подсказка “Don’t you have an account?” и ссылка Sign Up -->
                 <div class="signup-prompt">
                     <span>Don’t you have an account?</span>
                     <NavLink href="/register" class="btn-link">Sign Up</NavLink>
@@ -53,3 +58,10 @@
         </div>
     </div>
 </div>
+
+@code {
+    void GoToMain()
+    {
+        NavigationManager.NavigateTo("/main");
+    }
+}
