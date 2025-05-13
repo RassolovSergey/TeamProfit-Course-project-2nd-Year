@@ -1,7 +1,9 @@
 ﻿@page "/register"
+@using System.Net.Http.Json
 @using ClientPart.Dto
-@using Microsoft.AspNetCore.Components.Routing
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject ILogger<Register> Logger
 
 <div class="login-container">
     <div class="login-window">
@@ -21,41 +23,34 @@
 
             <!-- Правая колонка: форма регистрации -->
             <div class="login-right">
-                <!-- Заголовок -->
                 <h3 class="signin-title">Sign Up</h3>
 
-                <!-- Поле Login -->
                 <div class="form-field">
                     <label for="reg-login">Login:</label>
-                    <input id="reg-login" type="text" />
+                    <input id="reg-login" type="text" @bind="login" />
                 </div>
 
-                <!-- Поле E-mail -->
                 <div class="form-field">
                     <label for="reg-email">E-mail:</label>
-                    <input id="reg-email" type="text" />
+                    <input id="reg-email" type="text" @bind="email" />
                 </div>
 
-                <!-- Поле Password -->
                 <div class="form-field">
                     <label for="reg-password">Password:</label>
-                    <input id="reg-password" type="password" />
+                    <input id="reg-password" type="password" @bind="password" />
                 </div>
 
-                <!-- Поле Confirm Password -->
                 <div class="form-field">
                     <label for="reg-confirm-password">Confirm Password:</label>
-                    <input id="reg-confirm-password" type="password" />
+                    <input id="reg-confirm-password" type="password" @bind="confirmPassword" />
                 </div>
 
-                <!-- Кнопка регистрации: теперь переходит на /login -->
-                <button type="button"
-                        class="btn-submit"
-                        @onclick="GoToLogin">
-                    Sign Up
-                </button>
+                <button class="btn-submit" @onclick="RegisterAsync">Sign Up</button>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="error-message">@errorMessage</div>
+                }
 
-                <!-- Разделитель “Or Register With” -->
                 <div class="or-separator">
                     <span>Or Register With</span>
                 </div>
@@ -63,7 +58,6 @@
                     <img src="/image/IconGoogle.png" alt="Google Sign In" />
                 </div>
 
-                <!-- Подсказка “Already have an account?” и ссылка на вход -->
                 <div class="signup-prompt">
                     <span>Already have an account?</span>
                     <NavLink href="/login" class="btn-link">Sign In</NavLink>
@@ -75,8 +69,63 @@
 </div>
 
 @code {
-    void GoToLogin()
+    private string login = string.Empty;
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string confirmPassword = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private async Task RegisterAsync()
     {
-        NavigationManager.NavigateTo("/login");
+        errorMessage = string.Empty;
+        Logger.LogInformation("Registration attempt for {Login}", login);
+
+        if (password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        var dto = new CreateUserDto
+            {
+                Login = login,
+                Email = email,
+                Password = password
+            };
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("WebApi");
+            var response = await client.PostAsJsonAsync("auth/register", dto);
+            Logger.LogInformation("Register response status code: {StatusCode}", response.StatusCode);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                var err = await TryReadErrorMessage(response);
+                errorMessage = err ?? "Registration failed.";
+                Logger.LogWarning("Registration failed for {Login}: {Error}", login, errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+            Logger.LogError(ex, "Exception during registration for {Login}", login);
+        }
+    }
+
+    private async Task<string?> TryReadErrorMessage(HttpResponseMessage response)
+    {
+        try
+        {
+            var errorObj = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+            if (errorObj != null && errorObj.TryGetValue("message", out var msg))
+                return msg;
+        }
+        catch { }
+        return null;
     }
 }
