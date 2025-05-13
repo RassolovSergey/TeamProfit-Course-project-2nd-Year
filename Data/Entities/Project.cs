@@ -34,5 +34,8 @@ namespace Data.Entities
         // Вознаграждения и расходы
         public ICollection<Reward> Rewards { get; set; } = new List<Reward>();
         public ICollection<Cost> Costs { get; set; } = new List<Cost>();
+
+        // Участники проекта с их условиями
+        public ICollection<UserProject> UserProjects { get; set; } = new List<UserProject>();
     }
 }

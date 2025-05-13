@@ -12,6 +12,7 @@ namespace Data.Context
         public DbSet<Team> Teams { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
+        public DbSet<UserProject> UserProjects { get; set; }
         public DbSet<Reward> Rewards { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Sale> Sales { get; set; }

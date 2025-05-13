@@ -26,13 +26,6 @@ namespace Data.Entities
         [Required]
         public string PasswordSalt { get; set; } = null!;
 
-        // Тип сотрудничества:
-        // 0 - Фиксированная оплата
-        // 1 - Процет от прибыли
-        [Required]
-        public TypeCooperation TypeCooperation { get; set; }
-        public decimal? FixedPrice { get; set; }
-        public byte? PercentPrice { get; set; }
 
 
         // Связи
@@ -48,5 +41,8 @@ namespace Data.Entities
 
         // Расходы пользователя
         public ICollection<Cost> Costs { get; set; } = new List<Cost>();
+
+        // Параметры сотрудничества по проектам
+        public ICollection<UserProject> UserProjects { get; set; } = new List<UserProject>();
     }
 }

@@ -1,0 +1,68 @@
+﻿@* Отображается внутри общего modal-content *@
+<div class="team-body">
+
+    @* Основное содержимое — 90% пространства окна *@
+    <div class="team-main">
+        @* Левая большая область *@
+        <div class="team-list-area">
+            @* Здесь в будущем вы будете рендерить цикл по членам команды *@
+            <div class="team-item">
+                <img src="/image/Avatar.png" alt="Avatar" class="team-avatar" />
+                <div class="team-info">
+                    <span class="team-name">Rassolov Sergey</span>
+                    <span class="team-details">
+                        Id: 00002 – Role: 3D Artist – Type: % – Price: 60 – Add. Price: 0 – Card number: 0000 0000 0000 0000
+                    </span>
+                </div>
+            </div>
+            @* … ещё .team-item по количеству … *@
+        </div>
+
+        @* Правая узкая область сводки *@
+        <div class="team-summary-area">
+            <div class="team-summary-item">
+                <img src="/image/Avatar.png" alt="Avatar" class="team-avatar-small" />
+                <div class="summary-info">
+                    <span class="team-name">Rassolov Sergey</span>
+                    <span class="summary-details">Final price: $404</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Нижняя панель добавления нового пользователя — 10% окна *@
+    <div class="team-add-new">
+        <span class="add-new-label">Add a new user:</span>
+        <div class="add-new-controls">
+            <button class="add-btn">＋</button>
+            <input type="text" placeholder="User id" />
+            <input type="text" placeholder="User role" />
+
+            <!-- переключатели валюты -->
+            <button class="icon-btn @(isDollar ? "selected" : "")"
+                    @onclick="() => SelectCurrency(true)">
+                $
+            </button>
+            <button class="icon-btn @(!isDollar ? "selected" : "")"
+                    @onclick="() => SelectCurrency(false)">
+                ％
+            </button>
+
+            <input type="text" placeholder="Price" />
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    // Текущий выбор валюты: true = $, false = %
+    bool isDollar = true;
+
+    void SelectCurrency(bool dollar)
+    {
+        isDollar = dollar;
+    }
+
+
+}

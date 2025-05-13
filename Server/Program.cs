@@ -17,6 +17,7 @@ internal class Program
                .AddDatabase(builder.Configuration)
                .AddRepositories()
                .AddBusinessServices()
+               .AddJwtAuthentication(builder.Configuration)
                .AddAutoMapper(typeof(MappingProfile).Assembly);
 
         // Поддержка контроллеров Web API

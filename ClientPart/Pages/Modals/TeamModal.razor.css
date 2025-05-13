@@ -1,0 +1,163 @@
+﻿/* 1) Контейнер модального тела (90% + 10%) */
+.team-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 1.1) Основная область — верхние 90% */
+.team-main {
+    flex: 0 0 90%;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem; /* отступы от краёв modal-content */
+    box-sizing: border-box;
+}
+
+/* 1.1.a) Левая область — 70% ширины */
+.team-list-area {
+    flex: 0 0 70%;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+/* Элемент списка пользователя */
+.team-item {
+    display: flex;
+    align-items: center;
+    background: #e4f0ff;
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.team-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 1rem;
+}
+
+.team-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.team-name {
+    font-weight: bold;
+    color: #002f6c;
+}
+
+.team-details {
+    font-size: 0.9rem;
+    color: #002f6c;
+}
+
+/* 1.1.b) Правая область — 30% ширины */
+.team-summary-area {
+    flex: 1;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* Краткая карточка справа */
+.team-summary-item {
+    display: flex;
+    align-items: center;
+    background: #e4f0ff;
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.team-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+}
+
+.summary-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-details {
+    font-size: 0.9rem;
+    color: #002f6c;
+}
+
+/* 1.2) Нижняя панель — 10% высоты */
+.team-add-new {
+    flex: 0 0 10%;
+    background: #002f6c;
+    border-radius: 0 0 1rem 1rem;
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Надпись */
+.add-new-label {
+    color: white;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* Контролы */
+.add-new-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex: 1 1 120px;
+    min-width: 120px;
+    align-items: center;
+}
+
+.add-btn {
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.add-new-controls input,
+.icon-btn {
+    background: #e4f0ff;
+    border: none;
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    color: #002f6c;
+    flex-shrink: 0;
+}
+
+.add-new-controls input {
+    flex: 1;
+}
+
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.icon-btn.selected {
+  background-color: white;
+  color: #002f6c;
+}

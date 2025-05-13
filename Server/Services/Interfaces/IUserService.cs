@@ -18,5 +18,8 @@ namespace Server.Services.Interfaces
 
         /// <summary>Удалить команду по идентификатору, вернуть true, если успешно</summary>
         Task<bool> DeleteAsync(int id);
+
+        // Проверяет credentials и возвращает JWT или null
+        Task<string?> AuthenticateAsync(string login, string password);
     }
 }

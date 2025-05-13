@@ -6,7 +6,6 @@
     width: 100vw;
     height: 100vh;
     background: #f5f5f5;
-    box-sizing: border-box;
 }
 
 /* 2) Главный блок: 1400px × 98vh, скругления, тень */
@@ -15,10 +14,9 @@
     width: 1400px;
     height: 98vh;
     background-color: white;
-    border-radius: 1rem;
+    border-radius: var(--r);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 0.5rem; /* минимальные отступы */
-    box-sizing: border-box;
 }
 
 /* 3) Левый столбец: 25% ширины */
@@ -26,7 +24,6 @@
     flex: 0 0 25%;
     display: flex;
     padding: 0.5rem;
-    box-sizing: border-box;
 }
 
 /* 3.1) Тёмно-синее окно во весь левый столбец */
@@ -35,7 +32,7 @@
     display: flex;
     flex-direction: column; /* две зоны сверху вниз */
     background-color: #002f6c;
-    border-radius: 1rem;
+    border-radius: var(--r);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -93,7 +90,6 @@
     border-top-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
     border-bottom-left-radius: 1rem;
-    box-sizing: border-box;
     padding: 1rem;
     display: flex; /* <- добавлено */
     flex-direction: column; /* <- добавлено */
@@ -105,7 +101,6 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .mode-label {
@@ -122,15 +117,16 @@
     flex-direction: column;
     gap: 0.5rem;
     width: 100%;
+    margin-bottom: 1rem;
 }
 
 .mode-btn {
     width: 100%;
-    background-color: rgba(0,47,108,0.5);
+    background-color: #002f6c;
     color: white;
     border: none;
     padding: 0.75rem 1rem;
-    border-radius: 1rem;
+    border-radius: var(--r);
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     font-weight: bold;
     cursor: pointer;
@@ -142,21 +138,20 @@
     }
 
     .mode-btn.selected {
-        background-color: #002f6c;
-        color: white;
+        background-color: white;
+        color: #002f6c;
     }
 
 /* 5) Your Project */
 .project-selector {
-    flex: 1; /* <- займет всё свободное пространство */
+    flex: 1;        /* <- займет всё свободное пространство */
     overflow-y: auto; /* <- появится прокрутка, если нужно */
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    margin-top: 2rem;
+    margin-top: 0.1rem;
     gap: 0.5rem;
-    box-sizing: border-box;
 }
 
 .section-title {
@@ -174,9 +169,7 @@
     gap: 0.5rem;
     flex: 1;
     width: 100%;
-    overflow-y: auto;
     padding-right: 0.5rem;
-    box-sizing: border-box;
 }
 
 .project-item {
@@ -184,7 +177,7 @@
     color: white;
     border: none;
     padding: 0.5rem 1rem;
-    border-radius: 1rem;
+    border-radius: var(--r);
     font-weight: bold;
     text-align: left;
     cursor: pointer;
@@ -207,16 +200,15 @@
     width: 100%;
     gap: 0.5rem;
     margin-top: 1rem;
-    box-sizing: border-box;
 }
 
 .filter-btn {
     width: 100%;
-    background-color: white;
-    color: #002f6c;
+    background-color: #002f6c;
+    color: white;
     border: none;
     padding: 0.5rem 1rem;
-    border-radius: 1rem;
+    border-radius: var(--r);
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -227,8 +219,8 @@
     }
 
     .filter-btn.selected {
-        background-color: #002f6c;
-        color: white;
+        background-color: white;
+        color: #002f6c;
     }
 
 /* 7) Join the project */
@@ -237,7 +229,6 @@
     flex-direction: column;
     width: 100%;
     margin-top: 1rem;
-    box-sizing: border-box;
 }
 
 .join-label {
@@ -253,10 +244,9 @@
     padding: 0.5rem 1rem;
     background-color: rgba(173, 216, 230, 0.5);
     border: none;
-    border-radius: 1rem;
+    border-radius: var(--r);
     color: white;
     font-size: 1rem;
-    box-sizing: border-box;
 }
 
     .join-input::placeholder {
@@ -269,7 +259,6 @@
     display: flex;
     flex-direction: column;
     padding: 0.5rem;
-    box-sizing: border-box;
 }
 /* 4.1) Верхняя зона — 10% */
 .right-top {
@@ -283,19 +272,18 @@
     width: 100%;
     height: 90%;
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
     display: flex;
     gap: 1rem;
     padding: 0.5rem;
-    box-sizing: border-box;
 }
 
 .overview-item {
     flex: 1;
     background: white;
     color: #002f6c;
-    border-radius: 1rem;
+    border-radius: var(--r);
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: flex;
     justify-content: center;
@@ -308,13 +296,11 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    box-sizing: border-box;
 }
 /* 4.2.1) Секции 30/40/40 */
 .rb-section {
     display: flex;
     gap: 1rem;
-    box-sizing: border-box;
 }
 
 .rb-top30 {
@@ -370,8 +356,8 @@
 /* Общие блоки с тестом */
 .rb-block {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -379,4 +365,125 @@
     height: 100%;
     font-weight: bold;
     color: #002f6c;
+}
+
+/* Модальный фон */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Модальное содержимое: flex-контейнер-колонка */
+.modal-content {
+    position: relative;
+    width: 1200px;
+    height: 800px;
+    background-color: white;
+    border-radius: var(--r);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    /* Текст внутри всего окна – белый */
+    color: white;
+}
+
+/* Заголовок модального окна: 10% высоты */
+.modal-header {
+    flex: 0 0 10%;
+    padding: 0;
+    background-color: #002f6c;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Скругляем все четыре угла */
+    border-radius: var(--r);
+}
+
+    /* Убедимся, что заголовок остаётся белым */
+    .modal-header h2 {
+        margin: 0;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+/* Тело модального окна: 90% высоты */
+.modal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;      /* убрали padding, т.к. используем внутренние отступы ниже */
+}
+
+
+/* Кнопка закрытия остаётся без изменений */
+.modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1;
+    color: white;
+}
+
+/* 1) Общий контейнер Team: две зоны 90%/10% */
+.team-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+}
+
+/* Верхняя зона: 90% */
+.tm-top {
+  flex: 0 0 90%;
+  display: flex;
+  gap: 1rem;
+}
+
+/* Деление tm-top: 75% и 25% */
+.tm-top-left  { flex: 3; }  /* 3 части из 4 */
+.tm-top-right { flex: 1; }  /* 1 часть из 4 */
+
+/* Нижняя зона: 10% */
+.tm-bottom {
+  flex: 0 0 10%;
+}
+
+/* 3) Общий стиль блоков */
+.tm-block {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    padding: 0.5rem;
+}
+
+/* Белые блоки в верхней зоне */
+.tm-block.white {
+  background-color: white;
+  color: #002f6c;
+}
+
+/* Тёмно-синий блок в нижней зоне */
+.tm-block.dark {
+  background-color: #002f6c;
+  color: white;
 }

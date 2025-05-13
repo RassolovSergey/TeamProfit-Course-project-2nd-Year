@@ -11,10 +11,5 @@ namespace Server.DTO.User
         [Required, EmailAddress, MaxLength(40)]
         public string Email { get; set; } = null!;
 
-        [Required]
-        public TypeCooperation TypeCooperation { get; set; }
-
-        public decimal? FixedPrice { get; set; }
-        public byte? PercentPrice { get; set; }
     }
 }

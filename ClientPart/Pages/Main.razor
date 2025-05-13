@@ -1,4 +1,5 @@
 ﻿@page "/main"
+@using ClientPart.Pages.Modals
 
 <div class="main-container">
     <div class="main-box">
@@ -27,10 +28,11 @@
                                 <button class="@GetModeBtnClass(false)" @onclick="() => SetMode(false)">Member</button>
                             </div>
                         </div>
-
+                        <div class="section-title">
+                            <span class="section-title">Your Project:</span>
+                        </div>
                         <!-- Your Project -->
                         <div class="project-selector">
-                            <span class="section-title">Your Project:</span>
                             <div class="projects-list">
                                 @foreach (var project in projects)
                                 {
@@ -84,36 +86,47 @@
                 </div>
             </div>
 
-            <!-- Нижняя зона: 90% высоты -->
+            <!-- Нижняя зона -->
             <div class="right-bottom">
-                <!-- 1) Три секции 30/40/40 по высоте -->
+                <!-- Три секции 30/40/40 с кликабельными блоками -->
                 <div class="rb-section rb-top30">
-                    <!-- 2) Внутри первой: 70/30 по ширине -->
                     <div class="rb-top30-left">
-                        <!-- 3) Левая часть: 50/50 по высоте -->
-                        <div class="rb-a50"><div class="rb-block">ProjectName</div></div>
-                        <div class="rb-a50"><div class="rb-block">Team</div></div>
+                        <div class="rb-a50">
+                            <div class="rb-block" @onclick="() => ShowModal(1)">ProjectName</div>
+                        </div>
+                        <div class="rb-a50">
+                            <div class="rb-block" @onclick="() => ShowModal(2)">Team</div>
+                        </div>
                     </div>
                     <div class="rb-top30-right">
-                        <div class="rb-block">Backers</div>
+                        <div class="rb-block" @onclick="() => ShowModal(3)">Backers</div>
                     </div>
                 </div>
 
                 <div class="rb-section rb-mid40">
-                    <!-- 4) Средняя секция: 50/50 по ширине -->
-                    <div class="rb-b50"><div class="rb-block">Income</div></div>
-                    <div class="rb-b50"><div class="rb-block">Expenses</div></div>
+                    <div class="rb-b50">
+                        <div class="rb-block" @onclick="() => ShowModal(4)">Income</div>
+                    </div>
+                    <div class="rb-b50">
+                        <div class="rb-block" @onclick="() => ShowModal(5)">Expenses</div>
+                    </div>
                 </div>
 
                 <div class="rb-section rb-bot40">
-                    <!-- 5) Нижняя секция: 50/50 по ширине -->
-                    <div class="rb-c50-left"><div class="rb-block">Project profit</div></div>
+                    <div class="rb-c50-left">
+                        <div class="rb-block" @onclick="() => ShowModal(6)">Project Profit</div>
+                    </div>
                     <div class="rb-c50-right">
-                        <!-- 6) Правая часть: три равные части по высоте -->
                         <div class="rb-c-right">
-                            <div class="rb-c-right-item"><div class="rb-block">Taxes /Commission</div></div>
-                            <div class="rb-c-right-item"><div class="rb-block">Your plan</div></div>
-                            <div class="rb-c-right-item"><div class="rb-block">Your profit</div></div>
+                            <div class="rb-c-right-item">
+                                <div class="rb-block" @onclick="() => ShowModal(7)">Taxes/Commission</div>
+                            </div>
+                            <div class="rb-c-right-item">
+                                <div class="rb-block" @onclick="() => ShowModal(8)">Project Plan</div>
+                            </div>
+                            <div class="rb-c-right-item">
+                                <div class="rb-block" @onclick="() => ShowModal(9)">Your Profit</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -124,7 +137,74 @@
     </div>
 </div>
 
+@* Модальное окно *@
+@if (currentModal != 0)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="modal-content" @onclick:stopPropagation>
+            <button class="modal-close" @onclick="CloseModal">×</button>
+            <!-- Делим окно на Header 10% и Body 90% -->
+            <div class="modal-header">
+                <h2>@GetModalTitle(currentModal)</h2>
+            </div>
+            <div class="modal-body">
+                @switch (currentModal)
+                {
+                    case 1:
+                        <ProjectNameModal />
+                        break;
+                    case 2:
+                        <TeamModal />
+                        break;
+                    case 3:
+                        <BackerModal />
+                        break;
+                    case 4:
+                        <IncomeModal />
+                        break;
+                    case 5:
+                        <ExpensesModal />
+                        break;
+                    case 6:
+                        <ProjectProfitModal />
+                        break;
+                    case 7:
+                        <TCModal />
+                        break;
+                    case 8:
+                        <YourPlanModal />
+                        break;
+                    case 9:
+                        <YourProfitModal />
+                        break;
+                    default:
+                        <div></div>
+                        break;
+                }
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    int currentModal = 0;
+    void ShowModal(int id) => currentModal = id;
+    void CloseModal() => currentModal = 0;
+
+    string GetModalTitle(int id) => id switch
+    {
+        1 => "Project Name",
+        2 => "Team",
+        3 => "Backer",
+        4 => "Income",
+        5 => "Expenses",
+        6 => "Project Profit",
+        7 => "Taxes/Commission",
+        8 => "Project Plan",
+        9 => "Your Profit",
+        _ => string.Empty
+    };
+
     // Mode
     bool isAdminMode = true;
     void SetMode(bool admin) => isAdminMode = admin;
@@ -138,6 +218,13 @@
     new Project { Id = 1, Name = "Project Name 1" },
     new Project { Id = 2, Name = "Project Name 2" },
     new Project { Id = 3, Name = "Project Name 3" },
+    new Project { Id = 1, Name = "Project Name 4" },
+    new Project { Id = 2, Name = "Project Name 5" },
+    new Project { Id = 3, Name = "Project Name 6" },
+    new Project { Id = 3, Name = "Project Name 7" },
+    new Project { Id = 1, Name = "Project Name 8" },
+    new Project { Id = 2, Name = "Project Name 9" },
+    new Project { Id = 3, Name = "Project Name 10" },
   };
     void SelectProject(int id) => selectedProjectId = id;
     string GetProjectBtnClass(int id)

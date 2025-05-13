@@ -1,0 +1,55 @@
+﻿@* ProjectNameModal.razor *@
+
+<div class="pn-modal-body">
+    <!-- Верхняя часть — 60% высоты -->
+    <div class="pn-upper">
+
+        <!-- Левый столбец — 60% ширины -->
+        <div class="pn-upper-left">
+
+            <!-- 1) Первый блок: ProjectName -->
+            <div class="pn-upper-left-block pn-block white">
+                <span class="pn-title">ProjectName</span>
+            </div>
+
+            <!-- 2) Второй блок: Additional information -->
+            <div class="pn-upper-left-block pn-block white">
+                <div class="additional-info">
+                    <!-- увеличенный и приподнятый заголовок -->
+                    <h3 class="additional-title">Additional information</h3>
+                    <!-- теперь три строки в одну линию -->
+                    <div class="info-lines">
+                        <div class="info-line">
+                            Project status: <span class="info-value">@ProjectStatus</span>
+                        </div>
+                        <div class="info-line">
+                            IdProject: <span class="info-value">@ProjectId</span>
+                        </div>
+                        <div class="info-line">
+                            Deadlines: <span class="info-value">@StartDate</span> – <span class="info-value">@EndDate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Правый столбец — 40% ширины -->
+        <div class="pn-upper-right">
+            <div class="pn-upper-right-block pn-block white">
+                <img src="/image/ProjectPrewie.png" alt="Project Preview" class="pn-preview-img" />
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Нижняя часть — 40% высоты (пока пустая) -->
+    <div class="pn-lower"></div>
+</div>
+
+@code {
+    private string ProjectStatus { get; set; } = "Planned";
+    private string ProjectId { get; set; } = "00001";
+    private string StartDate { get; set; } = "20.05.25";
+    private string EndDate { get; set; } = "30.05.25";
+}

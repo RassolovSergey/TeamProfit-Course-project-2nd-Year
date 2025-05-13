@@ -5,6 +5,9 @@ using System.Text;
 using Server.DTO.User;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Server.Services.Implementations
 {
@@ -15,12 +18,17 @@ namespace Server.Services.Implementations
         private readonly IUserRepository _repo;
         // Ссылка на AutoMapper для маппинга между Entity и DTO
         private readonly IMapper _mapper;
+        // Проверка на авторизацию пользователя
+        private readonly IConfiguration _config;
+
 
         // Конструктор, принимающий зависимости через DI
-        public UserService(IUserRepository repo, IMapper mapper)
+        public UserService(
+            IUserRepository repo, IMapper mapper, IConfiguration config)    // получаем IConfiguration из DI
         {
-            _repo = repo;       // Инициализируем репозиторий
-            _mapper = mapper;   // Инициализируем маппер
+            _repo = repo;
+            _mapper = mapper;
+            _config = config;
         }
 
         // Метод для получения списка всех пользователей
@@ -88,6 +96,46 @@ namespace Server.Services.Implementations
 
             // 4. Возвращаем обновлённый DTO
             return _mapper.Map<UserDto>(user);   // Конвертируем обновленную сущность в DTO и возвращаем
+        }
+
+        public async Task<string?> AuthenticateAsync(string login, string password)
+        {
+            // 1. Попытка найти пользователя по логину
+            var user = (await _repo.GetAllAsync())
+                           .FirstOrDefault(u => u.Login == login);
+            if (user == null)
+                return null;
+
+            // 2. Проверяем хеш пароля
+            using var sha = SHA256.Create();
+            var computedHash = sha.ComputeHash(
+                Encoding.UTF8.GetBytes(password + user.PasswordSalt));
+            var hashedInput = Convert.ToBase64String(computedHash);
+
+            if (hashedInput != user.HashPassword)
+                return null;
+
+            // 3. Формируем JWT-токен
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.Login),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler()
+                        .WriteToken(token);
         }
     }
 }
