@@ -1,123 +1,81 @@
-﻿using System.Collections.Generic;
+﻿// Server/Services/Implementations/UserProjectService.cs
 using System.Linq;
-using System.Threading.Tasks;
+using AutoMapper;
+using Data.Context;
 using Data.Entities;
 using Server.DTO.UserProject;
-using Server.Repositories.Interfaces;
+using Server.Repositories.Interfaces.Generic_Repository;
 using Server.Services.Interfaces;
 
 namespace Server.Services.Implementations
 {
-    /// <summary>
-    /// Бизнес-логика для работы с параметрами сотрудничества пользователя в проекте
-    /// </summary>
     public class UserProjectService : IUserProjectService
     {
-        private readonly IUserProjectRepository _repo;
+        private readonly IGenericRepository<UserProject> _repo;
+        private readonly IMapper _mapper;
+        private readonly AppDbContext _db;
 
-        public UserProjectService(IUserProjectRepository repo)
+        public UserProjectService(
+            IGenericRepository<UserProject> repo,
+            AppDbContext db,
+            IMapper mapper)
         {
             _repo = repo;
+            _db = db;       // <- сохраняем контекст
+            _mapper = mapper;
         }
 
-        /// <summary>
-        /// Получить все записи UserProject
-        /// </summary>
         public async Task<List<UserProjectDto>> GetAllAsync()
         {
-            var list = await _repo.GetAllAsync();
-            return list
-                .Select(up => new UserProjectDto
-                {
-                    UserId = up.UserId,
-                    ProjectId = up.ProjectId,
-                    TypeCooperation = up.TypeCooperation,
-                    FixedPrice = up.FixedPrice,
-                    PercentPrice = up.PercentPrice
-                })
-                .ToList();
+            var all = await _repo.GetAllAsync();
+            return _mapper.Map<List<UserProjectDto>>(all);
         }
 
-        /// <summary>
-        /// Получить одну запись по составному ключу (userId + projectId)
-        /// </summary>
         public async Task<UserProjectDto?> GetAsync(int userId, int projectId)
         {
-            var up = await _repo.GetByIdsAsync(userId, projectId);
-            if (up is null) return null;
-
-            return new UserProjectDto
-            {
-                UserId = up.UserId,
-                ProjectId = up.ProjectId,
-                TypeCooperation = up.TypeCooperation,
-                FixedPrice = up.FixedPrice,
-                PercentPrice = up.PercentPrice
-            };
+            var all = await _repo.GetAllAsync();
+            var e = all.FirstOrDefault(up => up.UserId == userId && up.ProjectId == projectId);
+            return e is null ? null : _mapper.Map<UserProjectDto>(e);
         }
 
-        /// <summary>
-        /// Создать новую запись UserProject
-        /// </summary>
+        public async Task<List<UserProjectDto>> GetByProjectAsync(int projectId)
+        {
+            var all = await _repo.GetAllAsync();
+            var filtered = all.Where(up => up.ProjectId == projectId).ToList();
+            return _mapper.Map<List<UserProjectDto>>(filtered);
+        }
+
         public async Task<UserProjectDto> CreateAsync(CreateUserProjectDto dto)
         {
-            var up = new UserProject
-            {
-                UserId = dto.UserId,
-                ProjectId = dto.ProjectId,
-                TypeCooperation = dto.TypeCooperation,
-                FixedPrice = dto.FixedPrice,
-                PercentPrice = dto.PercentPrice
-            };
-
-            await _repo.AddAsync(up);
+            var e = _mapper.Map<UserProject>(dto);
+            e.IsAdmin = false;
+            await _repo.AddAsync(e);
             await _repo.SaveChangesAsync();
-
-            return new UserProjectDto
-            {
-                UserId = up.UserId,
-                ProjectId = up.ProjectId,
-                TypeCooperation = up.TypeCooperation,
-                FixedPrice = up.FixedPrice,
-                PercentPrice = up.PercentPrice
-            };
+            return _mapper.Map<UserProjectDto>(e);
         }
 
-        /// <summary>
-        /// Обновить существующую запись по составному ключу
-        /// </summary>
         public async Task<UserProjectDto?> UpdateAsync(int userId, int projectId, UpdateUserProjectDto dto)
         {
-            var up = await _repo.GetByIdsAsync(userId, projectId);
-            if (up is null) return null;
-
-            up.TypeCooperation = dto.TypeCooperation;
-            up.FixedPrice = dto.FixedPrice;
-            up.PercentPrice = dto.PercentPrice;
-
-            await _repo.UpdateAsync(up);
+            var all = await _repo.GetAllAsync();
+            var e = all.FirstOrDefault(up => up.UserId == userId && up.ProjectId == projectId);
+            if (e is null) return null;
+            _mapper.Map(dto, e);
+            e.IsAdmin = false;
+            await _repo.UpdateAsync(e);
             await _repo.SaveChangesAsync();
-
-            return new UserProjectDto
-            {
-                UserId = up.UserId,
-                ProjectId = up.ProjectId,
-                TypeCooperation = up.TypeCooperation,
-                FixedPrice = up.FixedPrice,
-                PercentPrice = up.PercentPrice
-            };
+            return _mapper.Map<UserProjectDto>(e);
         }
 
-        /// <summary>
-        /// Удалить запись по составному ключу
-        /// </summary>
         public async Task<bool> DeleteAsync(int userId, int projectId)
         {
-            var up = await _repo.GetByIdsAsync(userId, projectId);
-            if (up is null) return false;
+            var all = await _repo.GetAllAsync();
+            var e = all.FirstOrDefault(up => up.UserId == userId && up.ProjectId == projectId);
+            if (e is null)
+                return false;
 
-            await _repo.DeleteByIdsAsync(userId, projectId);
-            await _repo.SaveChangesAsync();
+            // Удаляем напрямую через DbContext
+            _db.Set<UserProject>().Remove(e);
+            await _db.SaveChangesAsync();
             return true;
         }
     }

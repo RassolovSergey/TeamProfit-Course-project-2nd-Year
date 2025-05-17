@@ -1,9 +1,19 @@
-﻿namespace Server.DTO.UserProject
+﻿using Data.Enums;
+
+namespace Server.DTO.UserProject
 {
+    /// <summary>
+    /// Модель для обновления условий сотрудничества участника
+    /// </summary>
     public class UpdateUserProjectDto
     {
-        public Data.Enums.TypeCooperation TypeCooperation { get; set; }
-        public decimal? FixedPrice { get; set; }
-        public byte? PercentPrice { get; set; }
+        /// <summary>Тип сотрудничества</summary>
+        public TypeCooperation TypeCooperation { get; set; }
+
+        /// <summary>Новая фиксированная сумма</summary>
+        public decimal FixedPrice { get; set; }
+
+        /// <summary>Новый процент от прибыли</summary>
+        public decimal PercentPrice { get; set; }
     }
 }

@@ -1,5 +1,6 @@
-﻿using System.Text;
+﻿ using System.Text;
 using Data.Context;
+using Data.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -41,15 +42,16 @@ namespace Server.Extensions
 
             // Регистрация для каждого интерфейса
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<ITeamRepository, TeamRepository>();
-            services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IRewardRepository, RewardRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<ICostRepository, CostRepository>();
             services.AddScoped<ICurrencyRepository, CurrencyRepository>();
             services.AddScoped<IUserProjectRepository, UserProjectRepository>();
             services.AddScoped<IUserProjectRepository, UserProjectRepository>();
+            services.AddScoped<IGenericRepository<Project>, ProjectRepository>();
+            services.AddScoped<IGenericRepository<UserProject>, GenericRepository<UserProject>>();
             return services;
         }
 
@@ -59,13 +61,14 @@ namespace Server.Extensions
         public static IServiceCollection AddBusinessServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ITeamService, TeamService>();
-            services.AddScoped<IProjectService, ProjectService>();
             services.AddScoped<IRewardService, RewardService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ISaleService, SaleService>();
             services.AddScoped<ICostService, CostService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
+            services.AddScoped<IUserProjectService, UserProjectService>();
+            services.AddScoped<IProjectService, ProjectService>();
+            services.AddScoped<IProjectService, ProjectService>();
             services.AddScoped<IUserProjectService, UserProjectService>();
             return services;
         }

@@ -9,10 +9,8 @@ namespace Data.Enums
     /// Статусы проекта
     public enum ProjectStatus
     {
-        Неактивен,
-        Активен,
-        Завершен,
-        Приостановлен,
-        Отменён
+        PlannedProject,
+        CurrentProject,
+        CompletedProject
     }
 }

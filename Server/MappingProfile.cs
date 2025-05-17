@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using Data.Entities;
+using Server.DTO.Project;
 using Server.DTO.User;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Server.DTO.UserProject;
 
 namespace Server
 {
@@ -9,24 +10,60 @@ namespace Server
     {
         public MappingProfile()
         {
-            // Entity → Dto
+            // User → Dto
             CreateMap<User, UserDto>();
-
-            // CreateDto → Entity
             CreateMap<CreateUserDto, User>()
                 .ForMember(dest => dest.HashPassword, opt => opt.Ignore())
                 .ForMember(dest => dest.PasswordSalt, opt => opt.Ignore())
                 .ForMember(dest => dest.Costs, opt => opt.Ignore())
-                .ForMember(dest => dest.Teams, opt => opt.Ignore())
                 .ForMember(dest => dest.Currency, opt => opt.Ignore());
-
             CreateMap<UpdateUserDto, User>()
                 // не трогаем поля пароля и навигации
                 .ForMember(dest => dest.HashPassword, opt => opt.Ignore())
                 .ForMember(dest => dest.PasswordSalt, opt => opt.Ignore())
                 .ForMember(dest => dest.Costs, opt => opt.Ignore())
-                .ForMember(dest => dest.Teams, opt => opt.Ignore())
                 .ForMember(dest => dest.Currency, opt => opt.Ignore());
+
+            // --- Проект и участники проекта ---
+
+            // 1) UserProject → UserProjectDto
+            CreateMap<UserProject, UserProjectDto>();
+
+            // 2) Project → ProjectDto (включая коллекцию участников)
+            CreateMap<Project, ProjectDto>()
+                .ForMember(dest => dest.Participants,
+                           opt => opt.MapFrom(src => src.UserProjects));
+
+            // 3) CreateProjectDto → Project
+            CreateMap<CreateProjectDto, Project>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.DateClose, opt => opt.Ignore())
+                .ForMember(d => d.UserProjects, opt => opt.Ignore());
+
+            // 4) UpdateProjectDto → Project
+            CreateMap<UpdateProjectDto, Project>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.DateClose, opt => opt.Ignore())
+                .ForMember(d => d.UserProjects, opt => opt.Ignore())
+                .ForMember(d => d.Status, opt => opt.Ignore());
+
+            // --- CRUD для UserProject ---
+
+            // 5) CreateUserProjectDto → UserProject
+            CreateMap<CreateUserProjectDto, UserProject>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.ProjectId))
+                .ForMember(dest => dest.TypeCooperation, opt => opt.MapFrom(src => src.TypeCooperation))
+                .ForMember(dest => dest.FixedPrice, opt => opt.MapFrom(src => src.FixedPrice))
+                .ForMember(dest => dest.PercentPrice, opt => opt.MapFrom(src => src.PercentPrice));
+
+            // 6) UpdateUserProjectDto → UserProject
+            CreateMap<UpdateUserProjectDto, UserProject>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.ProjectId, opt => opt.Ignore())
+                .ForMember(dest => dest.TypeCooperation, opt => opt.MapFrom(src => src.TypeCooperation))
+                .ForMember(dest => dest.FixedPrice, opt => opt.MapFrom(src => src.FixedPrice))
+                .ForMember(dest => dest.PercentPrice, opt => opt.MapFrom(src => src.PercentPrice));
         }
     }
 }

@@ -29,11 +29,6 @@ namespace Data.Entities
 
 
         // Связи
-        // Команды, в которых состоит пользователь
-        public ICollection<Team> Teams { get; set; } = new List<Team>();
-
-
-
         // Основная валюта
         public int? CurrencyId { get; set; }
         public Currency? Currency { get; set; }

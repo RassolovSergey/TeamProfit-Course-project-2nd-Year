@@ -1,10 +1,12 @@
 ﻿using Data.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Data.Configurations
 {
-    // Конфигурация сущности Project
+    /// <summary>
+    /// Конфигурация EF Core для сущности Project
+    /// </summary>
     public class ProjectConfiguration : IEntityTypeConfiguration<Project>
     {
         public void Configure(EntityTypeBuilder<Project> builder)
@@ -14,30 +16,48 @@ namespace Data.Configurations
 
             builder.Property(p => p.Name)
                    .IsRequired();
+
             builder.Property(p => p.Description)
                    .HasMaxLength(500);
-            builder.Property(p => p.DateCreation)
-                   .IsRequired();
-            builder.Property(p => p.DateUpdate)
-                   .IsRequired();
-            builder.Property(p => p.DateClose);
 
-            // enum статус как строка
+            builder.Property(p => p.DateStart)
+                   .IsRequired();
+
+            builder.Property(p => p.DateClose)
+                   .IsRequired();
+
+            builder.Property(p => p.ProjectDuration)
+                   .IsRequired();
+
             builder.Property(p => p.Status)
                    .HasConversion<string>()
-                   .HasMaxLength(50);
+                   .HasMaxLength(50)
+                   .IsRequired(false);
 
-            // связь 1:n: Project - Reward
+            // Проект — награды (1:n)
             builder.HasMany(p => p.Rewards)
                    .WithOne(r => r.Project)
                    .HasForeignKey(r => r.ProjectId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // связь 1:n: Project - Cost
+            // Проект — расходы (1:n)
             builder.HasMany(p => p.Costs)
                    .WithOne(c => c.Project)
                    .HasForeignKey(c => c.ProjectId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            // Проект — пользователи (1:n через UserProject)
+            builder.HasMany(p => p.UserProjects)
+                   .WithOne(up => up.Project)
+                   .HasForeignKey(up => up.ProjectId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Новая связь: каждая валюта может быть у многих проектов,
+            // но проект — только в одной валюте
+            builder.HasOne(p => p.Currency)
+                   .WithMany(c => c.Projects)
+                   .HasForeignKey(p => p.CurrencyId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

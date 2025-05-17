@@ -18,5 +18,6 @@ namespace Data.Entities
 
         // Пользователи, выбравшие эту валюту
         public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<Project> Projects { get; set; } = new List<Project>();
     }
 }

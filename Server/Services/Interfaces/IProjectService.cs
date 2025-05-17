@@ -13,10 +13,13 @@ namespace Server.Services.Interfaces
         /// <summary>Создать новый проект и вернуть его DTO</summary>
         Task<ProjectDto> CreateAsync(CreateProjectDto dto);
 
-        /// <summary>Обновить существующий проект, вернуть обновлённый DTO или null, если не найдено</summary>
+        /// <summary>
+        /// Обновить существующий проект,
+        /// вернуть обновленный DTO или null, если не найден
+        /// </summary>
         Task<ProjectDto?> UpdateAsync(int id, UpdateProjectDto dto);
 
-        /// <summary>Удалить проект по идентификатору, вернуть true, если успешно</summary>
+        /// <summary>Удалить проект по идентификатору, вернуть true при успехе</summary>
         Task<bool> DeleteAsync(int id);
     }
 }

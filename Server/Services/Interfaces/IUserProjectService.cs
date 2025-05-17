@@ -1,4 +1,4 @@
-﻿using Server.DTO.Cost;
+﻿using Data.Entities;
 using Server.DTO.UserProject;
 
 namespace Server.Services.Interfaces
@@ -19,5 +19,8 @@ namespace Server.Services.Interfaces
 
         // Удалить по составному ключу
         Task<bool> DeleteAsync(int userId, int projectId);
+
+        // Удаление по сущности
+        Task<List<UserProjectDto>> GetByProjectAsync(int projectId);
     }
 }

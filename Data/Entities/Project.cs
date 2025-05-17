@@ -1,8 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Data.Enums;
 
 namespace Data.Entities
 {
+    /// <summary>
+    /// Краудфандинговый проект
+    /// </summary>
     public class Project
     {
         [Key]
@@ -14,28 +19,40 @@ namespace Data.Entities
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        /// <summary>Дата старта проекта (задаётся пользователем)</summary>
         [Required]
-        public DateTime DateCreation { get; set; } = DateTime.UtcNow;
+        public DateTime DateStart { get; set; }
 
+        /// <summary>Дата завершения = DateStart + ProjectDuration</summary>
         [Required]
-        public DateTime DateUpdate { get; set; } = DateTime.UtcNow;
+        public DateTime DateClose { get; set; }
 
-        public DateTime? DateClose { get; set; }
+        /// <summary>Длительность проекта в днях</summary>
+        [Required]
+        public int ProjectDuration { get; set; }
 
-
-        // Связь
-        // Текущий статус кампании
+        /// <summary>Текущий статус проекта</summary>
         public ProjectStatus? Status { get; set; }
 
-        // Команда (1:1)
-        public int TeamId { get; set; }
-        public Team Team { get; set; } = null!;
-
-        // Вознаграждения и расходы
+        /// <summary>
+        /// Коллекция наград для проекта
+        /// </summary>
         public ICollection<Reward> Rewards { get; set; } = new List<Reward>();
+
+        /// <summary>
+        /// Коллекция расходов проекта
+        /// </summary>
         public ICollection<Cost> Costs { get; set; } = new List<Cost>();
 
-        // Участники проекта с их условиями
+        /// <summary>
+        /// Участники проекта с их условиями, в том числе админ (IsAdmin=true)
+        /// </summary>
         public ICollection<UserProject> UserProjects { get; set; } = new List<UserProject>();
+
+        /// <summary>Валюта проекта</summary>
+        [Required]
+        public int CurrencyId { get; set; }
+
+        public Currency Currency { get; set; } = null!;
     }
 }
