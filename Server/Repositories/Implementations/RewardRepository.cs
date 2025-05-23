@@ -1,15 +1,18 @@
-﻿using Data.Context;
+﻿// RewardRepository.cs
+using Data.Context;
 using Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using Server.Repositories.Implementations.GenericRepository;
-using Server.Repositories.Interfaces;
 
-namespace Server.Repositories.Implementations
+public class RewardRepository : GenericRepository<Reward>, IRewardRepository
 {
-    public class RewardRepository : GenericRepository<Reward>, IRewardRepository
+    private readonly AppDbContext _db;
+    public RewardRepository(AppDbContext db) : base(db) => _db = db;
+
+    public async Task<Reward?> GetWithProductsAsync(int rewardId)
     {
-        // Вызываем конструктор базового класса
-        public RewardRepository(AppDbContext db) : base(db)
-        {
-        }
+        return await _db.Rewards
+                        .Include(r => r.Products)
+                        .FirstOrDefaultAsync(r => r.Id == rewardId);
     }
 }

@@ -1,7 +1,10 @@
 ﻿// Server/Controllers/RewardsController.cs
 using Microsoft.AspNetCore.Mvc;
 using Server.DTO.Reward;
+using Server.DTO.Product;
 using Server.Services.Interfaces;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
@@ -16,42 +19,30 @@ namespace Server.Controllers
             _service = service;
         }
 
-        /// <summary>Получить все награды</summary>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var list = await _service.GetAllAsync();
-            return Ok(list);
-        }
+        public async Task<ActionResult<List<RewardDto>>> GetAll()
+            => Ok(await _service.GetAllAsync());
 
-        /// <summary>Получить все награды по проекту</summary>
         [HttpGet("/api/projects/{projectId}/rewards")]
-        public async Task<IActionResult> GetByProject(int projectId)
-        {
-            var list = await _service.GetByProjectAsync(projectId);
-            return Ok(list);
-        }
+        public async Task<ActionResult<List<RewardDto>>> GetByProject(int projectId)
+            => Ok(await _service.GetByProjectAsync(projectId));
 
-        /// <summary>Получить награду по id</summary>
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<RewardDto>> Get(int id)
         {
             var dto = await _service.GetByIdAsync(id);
             return dto is null ? NotFound() : Ok(dto);
         }
 
-        /// <summary>Создать награду для проекта</summary>
         [HttpPost("/api/projects/{projectId}/rewards")]
-        public async Task<IActionResult> Create(int projectId, [FromBody] CreateRewardDto dto)
+        public async Task<ActionResult<RewardDto>> Create(
+            int projectId,
+            [FromBody] CreateRewardDto dto)
         {
             var created = await _service.CreateAsync(dto, projectId);
-            return CreatedAtAction(
-                nameof(Get),
-                new { id = created.Id },
-                created);
+            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
 
-        /// <summary>Обновить награду</summary>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(
             int id,
@@ -61,12 +52,38 @@ namespace Server.Controllers
             return updated is null ? NotFound() : Ok(updated);
         }
 
-        /// <summary>Удалить награду</summary>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
+            => (await _service.DeleteAsync(id)) ? NoContent() : NotFound();
+
+
+        // Привязать продукт к награде
+        [HttpPost("{rewardId:int}/products/{productId:int}")]
+        public async Task<IActionResult> AddProduct(
+            int rewardId,
+            int productId)
         {
-            var ok = await _service.DeleteAsync(id);
+            var ok = await _service.AddProductAsync(rewardId, productId);
             return ok ? NoContent() : NotFound();
+        }
+
+        // Открепить продукт от награды
+        [HttpDelete("{rewardId:int}/products/{productId:int}")]
+        public async Task<IActionResult> RemoveProduct(
+            int rewardId,
+            int productId)
+        {
+            var ok = await _service.RemoveProductAsync(rewardId, productId);
+            return ok ? NoContent() : NotFound();
+        }
+
+        // Получить все продукты награды
+        [HttpGet("{rewardId:int}/products")]
+        public async Task<ActionResult<List<ProductDto>>> GetProducts(
+            int rewardId)
+        {
+            var list = await _service.GetProductsByRewardAsync(rewardId);
+            return Ok(list);
         }
     }
 }

@@ -1,13 +1,8 @@
-﻿using Data.Entities;
+﻿// IRewardRepository.cs
+using Data.Entities;
 using Server.Repositories.Interfaces.Generic_Repository;
 
-namespace Server.Repositories.Interfaces
+public interface IRewardRepository : IGenericRepository<Reward>
 {
-    /// <summary>
-    /// CRUD-операции для сущности Reward
-    /// </summary>
-    public interface IRewardRepository : IGenericRepository<Reward>
-    {
-        
-    }
+    Task<Reward?> GetWithProductsAsync(int rewardId);
 }
