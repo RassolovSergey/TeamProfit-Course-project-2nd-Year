@@ -5,6 +5,7 @@ using Server.Extensions; // для AddControllers()
 using AutoMapper;
 using Server;
 
+
 internal class Program
 {
     private static void Main(string[] args)
@@ -24,7 +25,7 @@ internal class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-
+        builder.Services.AddExchangeRateUpdater(builder.Configuration);
 
         var app = builder.Build();
 

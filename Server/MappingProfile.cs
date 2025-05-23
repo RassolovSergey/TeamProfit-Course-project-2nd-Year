@@ -1,8 +1,13 @@
 ﻿using AutoMapper;
 using Data.Entities;
+using Server.DTO.Cost;
+using Server.DTO.Currency.Server.DTO.Currency;
+using Server.DTO.Currency;
 using Server.DTO.Project;
 using Server.DTO.User;
 using Server.DTO.UserProject;
+using Server.DTO.Reward;
+using Server.DTO.Sale;
 
 namespace Server
 {
@@ -31,21 +36,21 @@ namespace Server
 
             // 2) Project → ProjectDto (включая коллекцию участников)
             CreateMap<Project, ProjectDto>()
-                .ForMember(dest => dest.Participants,
-                           opt => opt.MapFrom(src => src.UserProjects));
+                .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.UserProjects))
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId));
 
             // 3) CreateProjectDto → Project
             CreateMap<CreateProjectDto, Project>()
                 .ForMember(d => d.Id, opt => opt.Ignore())
                 .ForMember(d => d.DateClose, opt => opt.Ignore())
-                .ForMember(d => d.UserProjects, opt => opt.Ignore());
+                .ForMember(d => d.UserProjects, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId));
 
             // 4) UpdateProjectDto → Project
             CreateMap<UpdateProjectDto, Project>()
                 .ForMember(d => d.Id, opt => opt.Ignore())
                 .ForMember(d => d.DateClose, opt => opt.Ignore())
-                .ForMember(d => d.UserProjects, opt => opt.Ignore())
-                .ForMember(d => d.Status, opt => opt.Ignore());
+                .ForMember(d => d.UserProjects, opt => opt.Ignore());
 
             // --- CRUD для UserProject ---
 
@@ -64,6 +69,37 @@ namespace Server
                 .ForMember(dest => dest.TypeCooperation, opt => opt.MapFrom(src => src.TypeCooperation))
                 .ForMember(dest => dest.FixedPrice, opt => opt.MapFrom(src => src.FixedPrice))
                 .ForMember(dest => dest.PercentPrice, opt => opt.MapFrom(src => src.PercentPrice));
+
+
+            CreateMap<Cost, CostDto>();
+            CreateMap<CreateCostDto, Cost>();
+            CreateMap<UpdateCostDto, Cost>();
+
+
+            // Валюты
+            CreateMap<Currency, CurrencyDto>();
+            CreateMap<CreateCurrencyDto, Currency>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.RateToBase, opt => opt.Ignore()); // курс заполняется системой
+            CreateMap<UpdateCurrencyDto, Currency>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.RateToBase, opt => opt.Ignore()); // курс заполняется системой
+
+            // Reward → RewardDto
+            CreateMap<Reward, RewardDto>();
+            CreateMap<Reward, RewardDto>();
+            CreateMap<CreateRewardDto, Reward>().ForMember(d => d.Id, opt => opt.Ignore());
+            CreateMap<UpdateRewardDto, Reward>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.ProjectId, opt => opt.Ignore());
+
+
+            // В MappingProfile.cs в конструкторе:
+            CreateMap<Sale, SaleDto>();
+            CreateMap<CreateSaleDto, Sale>().ForMember(d => d.Id, opt => opt.Ignore());
+            CreateMap<UpdateSaleDto, Sale>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.RewardId, opt => opt.Ignore());
         }
     }
 }

@@ -16,6 +16,9 @@ namespace Data.Entities
         [MaxLength(5)]
         public string? Symbol { get; set; }
 
+        public decimal RateToBase { get; set; }
+
+
         // Пользователи, выбравшие эту валюту
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Project> Projects { get; set; } = new List<Project>();

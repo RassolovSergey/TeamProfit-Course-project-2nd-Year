@@ -8,6 +8,9 @@ namespace Server.Services.Interfaces
         /// <summary>Получить список всех вознаграждений</summary>
         Task<List<RewardDto>> GetAllAsync();
 
+        /// <summary>Получить список всех вознаграждений проекта</summary>
+        Task<List<RewardDto>> GetByProjectAsync(int projectId);
+
         /// <summary>Получить вознаграждение по идентификатору или null, если не найдено</summary>
         Task<RewardDto?> GetByIdAsync(int id);
 

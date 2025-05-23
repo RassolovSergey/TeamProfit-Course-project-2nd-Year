@@ -44,14 +44,23 @@ namespace Server.Services.Implementations
 
         public async Task<ProjectDto> CreateAsync(CreateProjectDto dto)
         {
-            // 1) сохраняем проект
+            // 1) создаём и сохраняем проект
             var project = _mapper.Map<Project>(dto);
-            project.DateClose = dto.DateStart.AddDays(dto.ProjectDuration);
+            project.DateClose = project.DateStart.AddDays(project.ProjectDuration);
+
+            // рассчитываем статус по дате
+            var now = DateTime.UtcNow;
+            project.Status = now < project.DateStart
+                ? ProjectStatus.PlannedProject
+                : now <= project.DateClose
+                    ? ProjectStatus.CurrentProject
+                    : ProjectStatus.CompletedProject;
+
             await _projRepo.AddAsync(project);
             await _projRepo.SaveChangesAsync();
 
-            // 2) готовим запись администратора
-            var adminUp = new UserProject
+            // 2) привязываем администратора проекта
+            var adminLink = new UserProject
             {
                 ProjectId = project.Id,
                 UserId = dto.CreatorUserId,
@@ -60,16 +69,13 @@ namespace Server.Services.Implementations
                 PercentPrice = 0m,
                 IsAdmin = true
             };
-
-            // **Важное добавление: прикрепляем «заглушку» пользователя в контекст**  
-            // чтобы EF Core не пытался вставить нового User
             _db.Entry(new User { Id = dto.CreatorUserId })
                .State = EntityState.Unchanged;
 
-            await _upRepo.AddAsync(adminUp);
+            await _upRepo.AddAsync(adminLink);
             await _upRepo.SaveChangesAsync();
 
-            // 3) подгружаем участников для DTO
+            // 3) подгружаем участников и возвращаем DTO
             await _db.Entry(project)
                      .Collection(p => p.UserProjects)
                      .LoadAsync();
@@ -80,20 +86,26 @@ namespace Server.Services.Implementations
 
         public async Task<ProjectDto?> UpdateAsync(int id, UpdateProjectDto dto)
         {
+            // 1) ищем проект
             var project = await _projRepo.GetByIdAsync(id);
-            if (project is null) return null;
+            if (project is null)
+                return null;
 
-            // Обновляем поля
-            project.Name = dto.Name;
-            project.Description = dto.Description;
-            project.DateStart = dto.DateStart;
-            project.ProjectDuration = dto.ProjectDuration;
-            project.DateClose = dto.DateStart.AddDays(dto.ProjectDuration);
+            // 2) маппим поля и пересчитываем даты и статус
+            _mapper.Map(dto, project);
+            project.DateClose = project.DateStart.AddDays(project.ProjectDuration);
+
+            var now = DateTime.UtcNow;
+            project.Status = now < project.DateStart
+                ? ProjectStatus.PlannedProject
+                : now <= project.DateClose
+                    ? ProjectStatus.CurrentProject
+                    : ProjectStatus.CompletedProject;
 
             await _projRepo.UpdateAsync(project);
             await _projRepo.SaveChangesAsync();
 
-            // Обновляем навигацию участников для DTO
+            // 3) обновляем навигацию участников для DTO
             await _db.Entry(project)
                      .Collection(p => p.UserProjects)
                      .LoadAsync();

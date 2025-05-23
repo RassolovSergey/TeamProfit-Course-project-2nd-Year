@@ -1,4 +1,7 @@
-﻿using Server.DTO.Reward;
+﻿// Server/Services/Implementations/RewardService.cs
+using AutoMapper;
+using Data.Entities;
+using Server.DTO.Reward;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
 
@@ -6,29 +9,58 @@ namespace Server.Services.Implementations
 {
     public class RewardService : IRewardService
     {
-        public Task<RewardDto> CreateAsync(CreateRewardDto dto)
+        private readonly IRewardRepository _repo;
+        private readonly IMapper _mapper;
+
+        public RewardService(IRewardRepository repo, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _repo = repo;
+            _mapper = mapper;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<List<RewardDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var rewards = await _repo.GetAllAsync();
+            return _mapper.Map<List<RewardDto>>(rewards);
         }
 
-        public Task<List<RewardDto>> GetAllAsync()
+        public async Task<List<RewardDto>> GetByProjectAsync(int projectId)
         {
-            throw new NotImplementedException();
+            var rewards = await _repo.GetAllAsync();
+            return _mapper.Map<List<RewardDto>>(rewards.Where(r => r.ProjectId == projectId).ToList());
         }
 
-        public Task<RewardDto?> GetByIdAsync(int id)
+        public async Task<RewardDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var reward = await _repo.GetByIdAsync(id);
+            return reward == null ? null : _mapper.Map<RewardDto>(reward);
         }
 
-        public Task<RewardDto?> UpdateAsync(int id, UpdateRewardDto dto)
+        public async Task<RewardDto> CreateAsync(CreateRewardDto dto)
         {
-            throw new NotImplementedException();
+            var reward = _mapper.Map<Reward>(dto);
+            await _repo.AddAsync(reward);
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<RewardDto>(reward);
+        }
+
+        public async Task<RewardDto?> UpdateAsync(int id, UpdateRewardDto dto)
+        {
+            var reward = await _repo.GetByIdAsync(id);
+            if (reward == null) return null;
+            _mapper.Map(dto, reward);
+            await _repo.UpdateAsync(reward);
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<RewardDto>(reward);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var exists = await _repo.GetByIdAsync(id) != null;
+            if (!exists) return false;
+            await _repo.DeleteAsync(id);
+            await _repo.SaveChangesAsync();
+            return true;
         }
     }
 }

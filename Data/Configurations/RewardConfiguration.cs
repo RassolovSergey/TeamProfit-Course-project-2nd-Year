@@ -16,7 +16,7 @@ namespace Data.Configurations
 
             builder.Property(r => r.Name)
                    .IsRequired()
-                   .HasMaxLength(20);
+                   .HasMaxLength(50);
             builder.Property(r => r.Description)
                    .HasMaxLength(500);
             builder.Property(r => r.Price)

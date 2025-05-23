@@ -1,33 +1,59 @@
-﻿using Server.DTO.Cost;
+﻿using AutoMapper;
+using Data.Entities;
+using Server.DTO.Cost;
+using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
 
 namespace Server.Services.Implementations
 {
     public class CostService : ICostService
     {
-        public Task<CostDto> CreateAsync(CreateCostDto dto)
+        private readonly ICostRepository _repo;
+        private readonly IMapper _mapper;
+
+        public CostService(ICostRepository repo, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _repo = repo;
+            _mapper = mapper;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<List<CostDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var costs = await _repo.GetAllAsync();
+            return _mapper.Map<List<CostDto>>(costs);
         }
 
-        public Task<List<CostDto>> GetAllAsync()
+        public async Task<CostDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var cost = await _repo.GetByIdAsync(id);
+            return cost == null ? null : _mapper.Map<CostDto>(cost);
         }
 
-        public Task<CostDto?> GetByIdAsync(int id)
+        public async Task<CostDto> CreateAsync(CreateCostDto dto)
         {
-            throw new NotImplementedException();
+            var cost = _mapper.Map<Cost>(dto);
+            await _repo.AddAsync(cost);
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<CostDto>(cost);
         }
 
-        public Task<CostDto?> UpdateAsync(int id, UpdateCostDto dto)
+        public async Task<CostDto?> UpdateAsync(int id, UpdateCostDto dto)
         {
-            throw new NotImplementedException();
+            var cost = await _repo.GetByIdAsync(id);
+            if (cost == null) return null;
+            _mapper.Map(dto, cost);
+            await _repo.UpdateAsync(cost);
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<CostDto>(cost);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var exists = await _repo.GetByIdAsync(id) != null;
+            if (!exists) return false;
+            await _repo.DeleteAsync(id);
+            await _repo.SaveChangesAsync();
+            return true;
         }
     }
 }

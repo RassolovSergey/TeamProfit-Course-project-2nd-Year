@@ -1,26 +1,29 @@
-﻿using Data.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using Data.Enums;
 
 namespace Server.DTO.Project
 {
     /// <summary>Модель для создания нового проекта</summary>
     public class CreateProjectDto
     {
-        /// <summary>Название проекта</summary>
-        public string Name { get; set; } = null!;
+        [Required]
+        public string Name { get; set; }
 
-        /// <summary>Описание проекта</summary>
+        [StringLength(500)]
         public string? Description { get; set; }
 
-        /// <summary>Дата старта (задаётся пользователем)</summary>
+        [Required]
         public DateTime DateStart { get; set; }
 
-        /// <summary>Длительность проекта в днях</summary>
+        [Required]
         public int ProjectDuration { get; set; }
 
-        /// <summary>Первоначальный статус проекта</summary>
-        public ProjectStatus Status { get; set; }
 
-        /// <summary>Идентификатор пользователя, создающего проект (будет админом)</summary>
+        [Required]
         public int CreatorUserId { get; set; }
+
+        [Required]
+        public int CurrencyId { get; set; }
     }
+
 }

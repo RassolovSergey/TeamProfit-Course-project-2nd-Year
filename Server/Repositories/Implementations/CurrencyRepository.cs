@@ -5,10 +5,13 @@ using Server.Repositories.Interfaces;
 
 namespace Server.Repositories.Implementations
 {
+    /// <summary>
+    /// Реализация репозитория для сущности Currency на EF Core
+    /// </summary>
     public class CurrencyRepository : GenericRepository<Currency>, ICurrencyRepository
     {
-        // Вызываем конструктор базового класса
-        public CurrencyRepository(AppDbContext db) : base(db)
+        public CurrencyRepository(AppDbContext db)
+            : base(db)
         {
         }
     }

@@ -8,6 +8,6 @@ namespace Server.Repositories.Interfaces
     /// </summary>
     public interface ISaleRepository : IGenericRepository<Sale>
     {
-        
+        Task<List<Sale>> GetAllWithRewardsAsync();
     }
 }

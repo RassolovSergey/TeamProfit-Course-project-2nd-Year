@@ -26,6 +26,8 @@ namespace Server.DTO.Project
         /// <summary>Текущий статус проекта</summary>
         public ProjectStatus? Status { get; set; }
 
+        public int CurrencyId { get; set; }
+
         /// <summary>Список участников с их ролями (включая администратора)</summary>
         public List<UserProjectDto> Participants { get; set; } = new();
     }

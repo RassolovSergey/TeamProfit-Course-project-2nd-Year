@@ -8,6 +8,6 @@ namespace Server.Repositories.Interfaces
     /// </summary>
     public interface ICostRepository : IGenericRepository<Cost>
     {
-        
+        // при необходимости можно добавить специфичные для Cost методы
     }
 }

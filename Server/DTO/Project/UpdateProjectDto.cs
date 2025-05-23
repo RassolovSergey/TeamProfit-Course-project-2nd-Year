@@ -1,18 +1,24 @@
-﻿namespace Server.DTO.Project
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Server.DTO.Project
 {
     /// <summary>Модель для обновления существующего проекта</summary>
     public class UpdateProjectDto
     {
-        /// <summary>Новое название проекта</summary>
-        public string Name { get; set; } = null!;
+        [Required]
+        public string Name { get; set; }
 
-        /// <summary>Новое описание проекта</summary>
+        [StringLength(500)]
         public string? Description { get; set; }
 
-        /// <summary>Новая дата старта (можно перенести запуск)</summary>
+        [Required]
         public DateTime DateStart { get; set; }
 
-        /// <summary>Новая длительность проекта в днях</summary>
+        [Required]
         public int ProjectDuration { get; set; }
+
+        [Required]
+        public int CurrencyId { get; set; }
     }
+
 }

@@ -1,16 +1,18 @@
-﻿ using System.Text;
+﻿using System.Text;
 using Data.Context;
 using Data.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Server.Options;
 using Server.Repositories.Implementations;
 using Server.Repositories.Implementations.GenericRepository;
 using Server.Repositories.Interfaces;
 using Server.Repositories.Interfaces.Generic_Repository;
+using Server.Services.HostedServices;
 using Server.Services.Implementations;
 using Server.Services.Interfaces;
-
+using Microsoft.Extensions.Hosting;    // для AddHostedService<T>()
 
 namespace Server.Extensions
 {
@@ -103,6 +105,27 @@ namespace Server.Extensions
 
             services.AddAuthorization();
 
+            return services;
+        }
+        /// <summary>
+        /// Регистрирует всё, что связано с обновлением курсов валют
+        /// </summary>
+        public static IServiceCollection AddExchangeRateUpdater(this IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<FixerApiOptions>(
+                config.GetSection("FixerApi"));
+
+            var section = config.GetSection("FixerApi");
+            var baseUrl = section.GetValue<string>("BaseUrl");
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                throw new Exception("BaseUrl in FixerApi config section is missing!");
+
+            services.AddHttpClient("FixerApi", client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+            });
+
+            services.AddHostedService<CurrencyRateUpdaterService>();
             return services;
         }
     }

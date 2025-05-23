@@ -20,6 +20,10 @@ namespace Data.Configurations
                    .HasMaxLength(100);
             builder.Property(c => c.Symbol)
                    .HasMaxLength(5);
+            builder.Property(c => c.RateToBase)
+                   .IsRequired()
+                   .HasPrecision(18, 6)
+                   .HasComment("Курс валюты относительно базовой (USD)");
         }
     }
 }

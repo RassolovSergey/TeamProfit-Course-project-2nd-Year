@@ -4,7 +4,7 @@ using Server.Repositories.Interfaces.Generic_Repository;
 namespace Server.Repositories.Interfaces
 {
     /// <summary>
-    /// CRUD-операции для сущности Currency
+    /// Интерфейс репозитория для работы с сущностью Currency
     /// </summary>
     public interface ICurrencyRepository : IGenericRepository<Currency>
     {

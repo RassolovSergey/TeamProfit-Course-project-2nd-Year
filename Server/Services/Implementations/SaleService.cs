@@ -1,33 +1,70 @@
-﻿using Server.DTO.Sale;
+﻿using AutoMapper;
+using Data.Entities;
+using Server.DTO.Sale;
+using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
 
 namespace Server.Services.Implementations
 {
+    /// <summary>Сервис для продаж</summary>
     public class SaleService : ISaleService
     {
-        public Task<SaleDto> CreateAsync(CreateSaleDto dto)
+        private readonly ISaleRepository _repo;
+        private readonly IMapper _mapper;
+
+        public SaleService(ISaleRepository repo, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _repo = repo;
+            _mapper = mapper;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<List<SaleDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var sales = await _repo.GetAllWithRewardsAsync();
+            return _mapper.Map<List<SaleDto>>(sales);
         }
 
-        public Task<List<SaleDto>> GetAllAsync()
+        public async Task<List<SaleDto>> GetByProjectAsync(int projectId)
         {
-            throw new NotImplementedException();
+            var sales = await _repo.GetAllWithRewardsAsync();
+            // Фильтруем продажи по проекту через Reward.ProjectId
+            return sales
+                .Where(s => s.Reward != null && s.Reward.ProjectId == projectId)
+                .Select(_mapper.Map<SaleDto>)
+                .ToList();
         }
 
-        public Task<SaleDto?> GetByIdAsync(int id)
+        public async Task<SaleDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var sale = await _repo.GetByIdAsync(id);
+            return sale == null ? null : _mapper.Map<SaleDto>(sale);
         }
 
-        public Task<SaleDto?> UpdateAsync(int id, UpdateSaleDto dto)
+        public async Task<SaleDto> CreateAsync(CreateSaleDto dto)
         {
-            throw new NotImplementedException();
+            var sale = _mapper.Map<Sale>(dto);
+            await _repo.AddAsync(sale);
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<SaleDto>(sale);
+        }
+
+        public async Task<SaleDto?> UpdateAsync(int id, UpdateSaleDto dto)
+        {
+            var sale = await _repo.GetByIdAsync(id);
+            if (sale == null) return null;
+            _mapper.Map(dto, sale);
+            await _repo.UpdateAsync(sale);
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<SaleDto>(sale);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var exists = await _repo.GetByIdAsync(id) != null;
+            if (!exists) return false;
+            await _repo.DeleteAsync(id);
+            await _repo.SaveChangesAsync();
+            return true;
         }
     }
 }

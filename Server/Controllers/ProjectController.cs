@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Server.DTO.Project;
 using Server.Services.Interfaces;
+using AutoMapper;
+using Data.Context;
+using Data.Entities;
+using Data.Enums;
 
 namespace Server.Controllers
 {
@@ -9,10 +13,17 @@ namespace Server.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _service;
+        private readonly IMapper _mapper;
+        private readonly AppDbContext _db;
 
-        public ProjectsController(IProjectService service)
+        public ProjectsController(
+            IProjectService service,
+            IMapper mapper,
+            AppDbContext db)
         {
             _service = service;
+            _mapper = mapper;
+            _db = db;
         }
 
         /// <summary>GET api/Projects</summary>
