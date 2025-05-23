@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Server/Controllers/SalesController.cs
+using Microsoft.AspNetCore.Mvc;
 using Server.DTO.Sale;
 using Server.Services.Interfaces;
 
@@ -15,7 +16,7 @@ namespace Server.Controllers
             _service = service;
         }
 
-        /// <summary>Получить все продажи (все проекты)</summary>
+        /// <summary>Получить все продажи</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,7 +24,7 @@ namespace Server.Controllers
             return Ok(list);
         }
 
-        /// <summary>Получить все продажи для проекта</summary>
+        /// <summary>Получить все продажи по проекту</summary>
         [HttpGet("/api/projects/{projectId}/sales")]
         public async Task<IActionResult> GetByProject(int projectId)
         {
@@ -32,7 +33,7 @@ namespace Server.Controllers
         }
 
         /// <summary>Получить продажу по id</summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
             var dto = await _service.GetByIdAsync(id);
@@ -41,23 +42,30 @@ namespace Server.Controllers
 
         /// <summary>Создать продажу для награды</summary>
         [HttpPost("/api/rewards/{rewardId}/sales")]
-        public async Task<IActionResult> Create(int rewardId, [FromBody] CreateSaleDto dto)
+        public async Task<IActionResult> Create(
+            int rewardId,
+            [FromBody] CreateSaleDto dto)
         {
-            dto.RewardId = rewardId;
-            var created = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            // Передаём rewardId из пути, а в DTO его больше нет
+            var created = await _service.CreateAsync(dto, rewardId);
+            return CreatedAtAction(
+                nameof(Get),
+                new { id = created.Id },
+                created);
         }
 
         /// <summary>Обновить продажу</summary>
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateSaleDto dto)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromBody] UpdateSaleDto dto)
         {
             var updated = await _service.UpdateAsync(id, dto);
             return updated is null ? NotFound() : Ok(updated);
         }
 
         /// <summary>Удалить продажу</summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _service.DeleteAsync(id);

@@ -40,9 +40,10 @@ namespace Server.Services.Implementations
             return sale == null ? null : _mapper.Map<SaleDto>(sale);
         }
 
-        public async Task<SaleDto> CreateAsync(CreateSaleDto dto)
+        public async Task<SaleDto> CreateAsync(CreateSaleDto dto, int rewardId)
         {
             var sale = _mapper.Map<Sale>(dto);
+            sale.RewardId = rewardId;
             await _repo.AddAsync(sale);
             await _repo.SaveChangesAsync();
             return _mapper.Map<SaleDto>(sale);

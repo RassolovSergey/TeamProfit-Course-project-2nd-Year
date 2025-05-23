@@ -8,6 +8,7 @@ using Server.DTO.User;
 using Server.DTO.UserProject;
 using Server.DTO.Reward;
 using Server.DTO.Sale;
+using Server.DTO.Product;
 
 namespace Server
 {
@@ -100,6 +101,20 @@ namespace Server
             CreateMap<UpdateSaleDto, Sale>()
                 .ForMember(d => d.Id, opt => opt.Ignore())
                 .ForMember(d => d.RewardId, opt => opt.Ignore());
+
+            // Product → ProductDto
+            CreateMap<Product, ProductDto>()
+                .ForMember(d => d.RewardIds, opt => opt.Ignore());
+
+            // CreateProductDto → Product
+            CreateMap<CreateProductDto, Product>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.Rewards, opt => opt.Ignore());
+
+            // UpdateProductDto → Product
+            CreateMap<UpdateProductDto, Product>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.Rewards, opt => opt.Ignore());
         }
     }
 }

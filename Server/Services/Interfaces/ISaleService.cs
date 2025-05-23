@@ -7,7 +7,7 @@ namespace Server.Services.Interfaces
         Task<List<SaleDto>> GetAllAsync();
         Task<List<SaleDto>> GetByProjectAsync(int projectId);
         Task<SaleDto?> GetByIdAsync(int id);
-        Task<SaleDto> CreateAsync(CreateSaleDto dto);
+        Task<SaleDto> CreateAsync(CreateSaleDto dto, int rewardId);
         Task<SaleDto?> UpdateAsync(int id, UpdateSaleDto dto);
         Task<bool> DeleteAsync(int id);
     }

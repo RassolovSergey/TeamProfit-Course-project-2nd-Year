@@ -15,8 +15,5 @@ namespace Server.DTO.Sale
         [Required]
         [EmailAddress]
         public string BackerEmail { get; set; } = null!;
-
-        [Required]
-        public int RewardId { get; set; }
     }
 }

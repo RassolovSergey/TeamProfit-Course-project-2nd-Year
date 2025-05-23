@@ -33,7 +33,7 @@ namespace Server.Controllers
         }
 
         /// <summary>Получить награду по id</summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
             var dto = await _service.GetByIdAsync(id);
@@ -44,21 +44,25 @@ namespace Server.Controllers
         [HttpPost("/api/projects/{projectId}/rewards")]
         public async Task<IActionResult> Create(int projectId, [FromBody] CreateRewardDto dto)
         {
-            dto.ProjectId = projectId;
-            var created = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            var created = await _service.CreateAsync(dto, projectId);
+            return CreatedAtAction(
+                nameof(Get),
+                new { id = created.Id },
+                created);
         }
 
         /// <summary>Обновить награду</summary>
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateRewardDto dto)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromBody] UpdateRewardDto dto)
         {
             var updated = await _service.UpdateAsync(id, dto);
             return updated is null ? NotFound() : Ok(updated);
         }
 
         /// <summary>Удалить награду</summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _service.DeleteAsync(id);

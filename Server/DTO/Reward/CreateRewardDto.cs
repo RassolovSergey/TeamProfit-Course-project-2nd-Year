@@ -14,8 +14,5 @@ namespace Server.DTO.Reward
 
         [Required]
         public decimal Price { get; set; }
-
-        [Required]
-        public int ProjectId { get; set; }
     }
 }

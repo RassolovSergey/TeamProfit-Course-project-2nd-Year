@@ -9,5 +9,6 @@ namespace Server.Repositories.Interfaces
     public interface ISaleRepository : IGenericRepository<Sale>
     {
         Task<List<Sale>> GetAllWithRewardsAsync();
+
     }
 }
