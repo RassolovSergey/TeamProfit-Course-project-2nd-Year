@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿// Server/Controllers/UserController.cs
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Server.DTO.User;
 using Server.Services.Interfaces;
 
@@ -7,18 +8,16 @@ namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // Контроллер для работы с пользователями
+    // [Authorize]  // все операции, кроме регистрации, требуют валидного JWT
     public class UserController : ControllerBase
     {
-        // Сервис для работы с пользователями (внедряется через DI)
         private readonly IUserService _svc;
-        // Конструктор с внедрением зависимости IUserService
+
         public UserController(IUserService svc) => _svc = svc;
 
         /// <summary>
         /// Получить список всех пользователей
         /// </summary>
-        /// <returns>Список пользователей в формате UserDto</returns>
         [HttpGet]
         public async Task<ActionResult<List<UserDto>>> GetAll()
             => Ok(await _svc.GetAllAsync());
@@ -26,11 +25,6 @@ namespace Server.Controllers
         /// <summary>
         /// Получить пользователя по идентификатору
         /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <returns>
-        /// 200 - пользователь найден (UserDto)
-        /// 404 - пользователь не найден
-        /// </returns>
         [HttpGet("{id:int}")]
         public async Task<ActionResult<UserDto>> Get(int id)
         {
@@ -39,13 +33,10 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// Создать нового пользователя
+        /// Создать нового пользователя (регистрация)  
+        /// Открыто для всех
         /// </summary>
-        /// <param name="dto">Данные для создания пользователя</param>
-        /// <returns>
-        /// 201 - пользователь успешно создан (с Location в заголовках)
-        /// 400 - неверные данные в запросе
-        /// </returns>
+        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto)
         {
@@ -54,32 +45,20 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// Обновить данные пользователя
+        /// Обновить данные пользователя  
+        /// Доступно авторизованному пользователю
         /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <param name="dto">Новые данные пользователя</param>
-        /// <returns>
-        /// 200 - пользователь успешно обновлен (UserDto)
-        /// 400 - неверные данные в запросе
-        /// 404 - пользователь не найден
-        /// </returns>
         [HttpPut("{id:int}")]
         public async Task<ActionResult<UserDto>> Update(int id, [FromBody] UpdateUserDto dto)
         {
             var updated = await _svc.UpdateAsync(id, dto);
-            if (updated is null)
-                return NotFound();
-            return Ok(updated);
+            return updated is null ? NotFound() : Ok(updated);
         }
 
         /// <summary>
-        /// Удалить пользователя
+        /// Удалить пользователя  
+        /// Доступно авторизованному пользователю
         /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <returns>
-        /// 204 - пользователь успешно удален
-        /// 404 - пользователь не найден
-        /// </returns>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

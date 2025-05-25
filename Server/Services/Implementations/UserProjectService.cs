@@ -1,9 +1,11 @@
 ﻿// Server/Services/Implementations/UserProjectService.cs
 using System.Linq;
+using System.Linq.Expressions;
 using AutoMapper;
 using Data.Context;
 using Data.Entities;
 using Server.DTO.UserProject;
+using Server.Repositories.Interfaces;
 using Server.Repositories.Interfaces.Generic_Repository;
 using Server.Services.Interfaces;
 
@@ -14,15 +16,18 @@ namespace Server.Services.Implementations
         private readonly IGenericRepository<UserProject> _repo;
         private readonly IMapper _mapper;
         private readonly AppDbContext _db;
+        private readonly IUserProjectRepository _upRepo;
 
         public UserProjectService(
             IGenericRepository<UserProject> repo,
             AppDbContext db,
+            IUserProjectRepository upRepo,
             IMapper mapper)
         {
             _repo = repo;
             _db = db;       // <- сохраняем контекст
             _mapper = mapper;
+            _upRepo = upRepo;
         }
 
         public async Task<List<UserProjectDto>> GetAllAsync()
@@ -78,5 +83,21 @@ namespace Server.Services.Implementations
             await _db.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> IsMemberAsync(int projectId, int userId)
+        {
+            return await _upRepo.AnyAsync(
+                up => up.ProjectId == projectId && up.UserId == userId);
+        }
+
+        public async Task<bool> IsAdminAsync(int projectId, int userId)
+        {
+            return await _upRepo.AnyAsync(
+                up => up.ProjectId == projectId
+                   && up.UserId == userId
+                   && up.IsAdmin);
+        }
+
+        public async Task<bool> AnyAsync(Expression<Func<UserProject, bool>> predicate) => await _upRepo.AnyAsync(predicate);
     }
 }

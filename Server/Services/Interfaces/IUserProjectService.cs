@@ -1,10 +1,17 @@
-﻿using Data.Entities;
+﻿using System.Linq.Expressions;
+using Data.Entities;
 using Server.DTO.UserProject;
 
 namespace Server.Services.Interfaces
 {
     public interface IUserProjectService
     {
+        // Проверяет, что пользователь состоит в проекте (и может его просматривать)
+        Task<bool> IsMemberAsync(int projectId, int userId);
+
+        // Проверяет, что пользователь администратор проекта
+        Task<bool> IsAdminAsync(int projectId, int userId);
+
         // Получить все данные из таблицы
         Task<List<UserProjectDto>> GetAllAsync();
 
@@ -22,5 +29,11 @@ namespace Server.Services.Interfaces
 
         // Удаление по сущности
         Task<List<UserProjectDto>> GetByProjectAsync(int projectId);
+
+        /// <summary>
+        /// Проверяет, существует ли запись UserProject по заданному условию.
+        /// </summary>
+        Task<bool> AnyAsync(Expression<Func<UserProject, bool>> predicate);
     }
+
 }

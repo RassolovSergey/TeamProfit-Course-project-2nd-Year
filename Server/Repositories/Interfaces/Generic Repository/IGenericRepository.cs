@@ -1,4 +1,6 @@
-﻿namespace Server.Repositories.Interfaces.Generic_Repository
+﻿using System.Linq.Expressions;
+
+namespace Server.Repositories.Interfaces.Generic_Repository
 {
     /// <summary>
     /// Общий CRUD-контракт для любой сущности
@@ -12,5 +14,6 @@
         Task UpdateAsync(TEntity entity);
         Task DeleteAsync(int id);
         Task SaveChangesAsync();
+        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
     }
 }

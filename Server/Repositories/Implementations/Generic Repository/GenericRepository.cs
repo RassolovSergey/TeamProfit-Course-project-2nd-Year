@@ -1,4 +1,5 @@
-﻿using Data.Context;
+﻿using System.Linq.Expressions;
+using Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Server.Repositories.Interfaces.Generic_Repository;
 
@@ -65,5 +66,7 @@ namespace Server.Repositories.Implementations.GenericRepository
             // Применяем все накопленные Add/Update/Delete к БД
             return _db.SaveChangesAsync();
         }
+
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate) => await _db.Set<TEntity>().AnyAsync(predicate);
     }
 }

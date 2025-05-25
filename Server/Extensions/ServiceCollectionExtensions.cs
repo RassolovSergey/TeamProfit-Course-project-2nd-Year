@@ -12,7 +12,8 @@ using Server.Repositories.Interfaces.Generic_Repository;
 using Server.Services.HostedServices;
 using Server.Services.Implementations;
 using Server.Services.Interfaces;
-using Microsoft.Extensions.Hosting;    // для AddHostedService<T>()
+using Server.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Server.Extensions
 {
@@ -126,6 +127,22 @@ namespace Server.Extensions
             });
 
             services.AddHostedService<CurrencyRateUpdaterService>();
+            return services;
+        }
+
+        public static IServiceCollection AddProjectAuthorization(this IServiceCollection services)
+        {
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ProjectMember", policy =>
+                    policy.Requirements.Add(new ProjectMemberRequirement()));
+                options.AddPolicy("ProjectAdmin", policy =>
+                    policy.Requirements.Add(new ProjectAdminRequirement()));
+            });
+
+            // вместо AddSingleton — AddScoped или AddTransient
+            services.AddScoped<IAuthorizationHandler, ProjectMemberHandler>();
+            services.AddScoped<IAuthorizationHandler, ProjectAdminHandler>();
             return services;
         }
     }
