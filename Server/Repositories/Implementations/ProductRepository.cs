@@ -26,5 +26,13 @@ namespace Server.Repositories.Implementations
                             .Where(p => p.Rewards.Any(r => r.Id == rewardId))
                             .ToListAsync();
         }
+
+        public async Task<Product?> GetWithRewardsAsync(int productId)
+        {
+            return await _db.Products
+                            .Include(p => p.Rewards)
+                            .FirstOrDefaultAsync(p => p.Id == productId);
+        }
+
     }
 }

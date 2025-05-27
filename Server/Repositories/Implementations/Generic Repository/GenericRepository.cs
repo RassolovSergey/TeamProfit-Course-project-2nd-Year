@@ -19,7 +19,7 @@ namespace Server.Repositories.Implementations.GenericRepository
         public GenericRepository(AppDbContext db)
         {
             _db = db;                   // DbContext
-            _set = db.Set<TEntity>();   // DbSet<TEntity> возвращает DbSet для нужной таблицы (Напрмиер: DbSet<Team>)
+            _set = db.Set<TEntity>();   // DbSet<TEntity> возвращает DbSet для нужной таблицы
         }
 
         // Получить полнный список

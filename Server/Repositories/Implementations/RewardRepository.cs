@@ -7,7 +7,10 @@ using Server.Repositories.Implementations.GenericRepository;
 public class RewardRepository : GenericRepository<Reward>, IRewardRepository
 {
     private readonly AppDbContext _db;
-    public RewardRepository(AppDbContext db) : base(db) => _db = db;
+    public RewardRepository(AppDbContext db) : base(db)
+    {
+        _db = db;
+    }
 
     public async Task<Reward?> GetWithProductsAsync(int rewardId)
     {

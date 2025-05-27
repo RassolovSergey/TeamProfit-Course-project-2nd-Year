@@ -1,57 +1,92 @@
-﻿using System.Security.Claims;               // Импорт пространства имен для работы с утверждениями (claims) пользователя.
-using Microsoft.AspNetCore.Authorization;   // Импорт пространства имен для работы с системой авторизации ASP.NET Core.
-using Microsoft.AspNetCore.Mvc.Filters;     // Импорт пространства имен для работы с контекстом фильтров MVC (например, AuthorizationFilterContext).
-using Server.Services.Interfaces;           // Импорт пространства имен для интерфейсов сервисов, в частности IUserProjectService.
+﻿// ProjectAdminHandler.cs
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using Server.Services.Interfaces;
 
 namespace Server.Authorization
 {
     /// <summary>
-    /// Handler (обработчик) для проверки требования авторизации <see cref="ProjectAdminRequirement"/>.
-    /// Он определяет логику, необходимую для удовлетворения этого требования, а именно:
-    /// проверяет, является ли текущий аутентифицированный пользователь администратором указанного проекта.
+    /// Handler для проверки, что пользователь – администратор проекта
     /// </summary>
-    public class ProjectAdminHandler : AuthorizationHandler<ProjectAdminRequirement>
+    public class ProjectAdminHandler
+        : AuthorizationHandler<ProjectAdminRequirement>
     {
-        // Сервис для работы с проектами и пользователями.
-        private readonly IUserProjectService _upService;
+        private readonly IUserProjectService _up;
+        private readonly ILogger<ProjectAdminHandler> _logger;
 
-        /// <summary>
-        /// Конструктор обработчика, использующий внедрение зависимостей для получения экземпляра <see cref="IUserProjectService"/>.
-        /// </summary>
-        /// <param name="upService">Сервис для проверки пользовательских разрешений в проектах.</param>
-        public ProjectAdminHandler(IUserProjectService upService) => _upService = upService; // Инициализация поля _upService полученным экземпляром сервиса.
-
-        /// <summary>
-        /// Асинхронный метод, который содержит основную логику проверки требования авторизации.
-        /// Вызывается системой авторизации ASP.NET Core для каждого требования <see cref="ProjectAdminRequirement"/>.
-        /// </summary>
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ProjectAdminRequirement requirement)
+        public ProjectAdminHandler(
+            IUserProjectService up,
+            ILogger<ProjectAdminHandler> logger)
         {
-            // Проверяем, является ли ресурс, к которому применяется авторизация, контекстом фильтрации MVC.
-            // Это позволяет получить доступ к данным маршрута (например, {projectId} из URL).
-            if (context.Resource is AuthorizationFilterContext mvcCtx &&
-                // Пытаемся извлечь значение "projectId" из данных маршрута.
-                mvcCtx.RouteData.Values.TryGetValue("projectId", out var pid) &&
-                // Пытаемся преобразовать полученное значение projectId в целое число.
-                int.TryParse(pid?.ToString(), out var projectId))
-            {
-                // Извлекаем идентификатор пользователя (UID) из утверждений (claims) аутентифицированного пользователя.
-                // ClaimTypes.NameIdentifier обычно содержит уникальный идентификатор пользователя.
-                var uid = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _up = up;
+            _logger = logger;
+        }
 
-                // Если идентификатор пользователя успешно преобразован в целое число
-                // И сервис _upService подтверждает, что пользователь является администратором данного проекта,
-                if (int.TryParse(uid, out var userId) &&
-                    await _upService.IsAdminAsync(projectId, userId))
+        protected override async Task HandleRequirementAsync(
+            AuthorizationHandlerContext context,
+            ProjectAdminRequirement requirement)
+        {
+            _logger.LogInformation("ProjectAdminHandler invoked. ResourceType={ResourceType}",
+                context.Resource?.GetType().Name ?? "<null>");
+
+            int? projectId = null;
+
+            // 1) Смотрим, что мы там получили: MVC-контекст или «сырый» HttpContext
+            if (context.Resource is AuthorizationFilterContext mvcCtx)
+            {
+                if (mvcCtx.RouteData.Values.TryGetValue("projectId", out var raw1)
+                    || mvcCtx.RouteData.Values.TryGetValue("id", out raw1))
                 {
-                    // То требование авторизации считается выполненным.
-                    // Пользователю разрешается доступ к ресурсу.
-                    context.Succeed(requirement);
+                    if (int.TryParse(raw1?.ToString(), out var pid1))
+                        projectId = pid1;
                 }
             }
-            // Если условия не выполнены (например, нет projectId в маршруте,
-            // или пользователь не является администратором), метод завершается,
-            // и требование не будет удовлетворено по умолчанию, что приведет к отказу в доступе.
+            else if (context.Resource is HttpContext httpCtx)
+            {
+                var rd = httpCtx.GetRouteData();
+                if (rd.Values.TryGetValue("projectId", out var raw2)
+                    || rd.Values.TryGetValue("id", out raw2))
+                {
+                    if (int.TryParse(raw2?.ToString(), out var pid2))
+                        projectId = pid2;
+                }
+            }
+
+            if (projectId == null)
+            {
+                _logger.LogWarning("ProjectAdminHandler: не удалось извлечь projectId из маршрута");
+                return;
+            }
+
+            _logger.LogInformation("Extracted projectId={ProjectId}", projectId);
+
+            // 2) Берём userId из JWT-claims
+            var uid = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(uid, out var userId))
+            {
+                _logger.LogWarning("ProjectAdminHandler: не удалось извлечь userId из Claims");
+                return;
+            }
+
+            _logger.LogInformation("Extracted userId={UserId}", userId);
+
+            // 3) Спрашиваем у сервиса, является ли этот пользователь админом проекта
+            var isAdmin = await _up.IsAdminAsync(projectId.Value, userId);
+            _logger.LogInformation("IsAdminAsync returned {IsAdmin}", isAdmin);
+
+            if (isAdmin)
+            {
+                _logger.LogInformation("ProjectAdminHandler: requirement succeeded");
+                context.Succeed(requirement);
+            }
+            else
+            {
+                _logger.LogWarning("ProjectAdminHandler: requirement NOT satisfied, returning 403");
+            }
         }
     }
 }

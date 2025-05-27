@@ -1,5 +1,8 @@
 ﻿@page "/main"
 @using ClientPart.Pages.Modals
+@using ClientPart.Dto
+@using ClientPart.Services
+@using Server.DTO.Project
 @inject ClientPart.Services.AuthorizedHttpClientProvider AuthClientProvider
 
 <div class="main-container">
@@ -33,17 +36,23 @@
                             <span class="section-title">Your Project:</span>
                         </div>
                         <!-- Your Project -->
-                        <div class="project-selector">
-                            <div class="projects-list">
-                                @foreach (var project in projects)
+                        <div class="projects-list">
+                            @if (isLoading)
+                            {
+                                <p style="color:white">Loading...</p>
+                            }
+                            else
+                            {
+                                @foreach (var proj in userProjects)
                                 {
-                                    <button class="@GetProjectBtnClass(project.Id)"
-                                            @onclick="() => SelectProject(project.Id)">
-                                        @project.Name
+                                    <button class="project-item @(proj.Id == selectedProjectId ? "selected" : "")"
+                                            @onclick="() => SelectProject(proj.Id)">
+                                        @proj.Name
                                     </button>
                                 }
-                            </div>
+                            }
                         </div>
+
 
                         <!-- Filter Section -->
                         <div class="filter-selector">
@@ -177,11 +186,13 @@
     </div>
 }
 
+
 @code {
+
+    // --- Модальные окна ---
     int currentModal = 0;
     void ShowModal(int id) => currentModal = id;
     void CloseModal() => currentModal = 0;
-
     string GetModalTitle(int id) => id switch
     {
         1 => "Project Name",
@@ -196,30 +207,64 @@
         _ => string.Empty
     };
 
-    // Mode
+    // --- Режим Admin / Member ---
     bool isAdminMode = true;
-    void SetMode(bool admin) => isAdminMode = admin;
+    void SetMode(bool admin)
+        => isAdminMode = admin;
     string GetModeBtnClass(bool admin)
-      => admin == isAdminMode ? "mode-btn selected" : "mode-btn";
+        => admin == isAdminMode ? "mode-btn selected" : "mode-btn";
 
-    // Your Project
-    int? selectedProjectId;
-    List<Project> projects = new()
-  {
-    new Project { Id = 1, Name = "Project Name 1" },
-    new Project { Id = 2, Name = "Project Name 2" },
+    // --- Список проектов пользователя ---
+    private List<ProjectDto> userProjects = new();
+    private bool isLoading = true;
+    private int? selectedProjectId;
 
-  };
-    void SelectProject(int id) => selectedProjectId = id;
-    string GetProjectBtnClass(int id)
-      => id == selectedProjectId ? "project-item selected" : "project-item";
+    [Inject] private AuthorizedHttpClientProvider ApiProvider { get; set; } = default!;
 
-    // Filter
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        var client = await ApiProvider.CreateClientAsync();
+        // предполагаемый эндпоинт, возвращающий только проекты текущего пользователя
+        userProjects = await client
+            .GetFromJsonAsync<List<ProjectDto>>("Projects/mine")
+            ?? new List<ProjectDto>();
+
+        // по умолчанию первый проект
+        if (userProjects.Count > 0)
+            selectedProjectId = userProjects[0].Id;
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    void SelectProject(int id)
+    {
+        selectedProjectId = id;
+        // здесь можно сохранять выбор в SessionStorage
+        // или сразу загружать детали выбранного проекта
+    }
+
+    // --- Фильтрация по статусу проекта ---
     enum FilterType { Planned, Current, Completed }
     FilterType selectedFilter = FilterType.Planned;
     void SetFilter(FilterType type) => selectedFilter = type;
-    string GetFilterBtnClass(FilterType type)
-      => type == selectedFilter ? "filter-btn selected" : "filter-btn";
+    string GetFilterBtnClass(FilterType type) => type == selectedFilter ? "filter-btn selected" : "filter-btn";
 
-    class Project { public int Id { get; set; } public string Name { get; set; } }
+    // --- DTO для списка проектов ---
+    public class ProjectDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public List<UserProjectDto> Participants { get; set; } = new();
+    }
+    public class UserProjectDto
+    {
+        public int ProjectId { get; set; }
+        public int UserId { get; set; }
+        public bool IsAdmin { get; set; }
+    }
 }
+

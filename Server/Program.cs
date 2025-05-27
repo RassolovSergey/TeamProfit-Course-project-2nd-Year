@@ -1,44 +1,37 @@
-﻿using Data.Context;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Server.Extensions; // для AddControllers()
-using AutoMapper;
+﻿using Server.Extensions;
 using Server;
 using Microsoft.OpenApi.Models;
 using Server.Filters;
-
-
 
 internal class Program
 {
     private static void Main(string[] args)
     {
-        // Создаем конструктор
         var builder = WebApplication.CreateBuilder(args);
 
-        // Регестрация объектов
+        // Регистрация сервисов в DI
         builder.Services
-               .AddDatabase(builder.Configuration)
-               .AddRepositories()
-               .AddBusinessServices()
-               .AddJwtAuthentication(builder.Configuration)
-               .AddProjectAuthorization()
-               .AddAutoMapper(typeof(MappingProfile).Assembly);
+               .AddDatabase(builder.Configuration)               // Настройка БД
+               .AddRepositories()                                // Репозитории
+               .AddBusinessServices()                            // Бизнес-сервисы
+               .AddJwtAuthentication(builder.Configuration)      // <— JWT-аутентификация
+               .AddProjectAuthorization()                        // Политики ProjectMember / ProjectAdmin
+               .AddAutoMapper(typeof(MappingProfile).Assembly)  // AutoMapper
+               .AddControllers();                               // Контроллеры API
 
-        // Поддержка контроллеров Web API
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddEndpointsApiExplorer();           // Endpoints for Swagger
+
+        // Swagger/OpenAPI
         builder.Services.AddSwaggerGen(c =>
         {
-            // 1) Объявляем документацию с именем "v1" и заполняем поля info
             c.SwaggerDoc("v1", new OpenApiInfo
             {
                 Title = "TeamProfit API",
-                Version = "3.1.0",
+                Version = "v1.0",
                 Description = "API для курсового проекта TeamProfit"
             });
 
-            // 2) Конфигурация схемы авторизации (у вас уже есть)
+            // Схема Bearer
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -59,31 +52,28 @@ internal class Program
                             Id   = "Bearer"
                         }
                     },
-                    new string[]{}
+                    Array.Empty<string>()
                 }
             });
 
-            // 3) Ваш OperationFilter
+            // Фильтр для скрытия [Authorize]-методов
             c.OperationFilter<HideAuthorizeOperationsFilter>();
         });
 
-
-        builder.Services.AddExchangeRateUpdater(builder.Configuration);
+        // builder.Services.AddExchangeRateUpdater(builder.Configuration); // отключена фоновая служба
 
         var app = builder.Build();
 
+        app.UseRouting();
 
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // Настройка HTTP
-        // Конфигурация пайплайна запросов
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "TeamProfit API v1");
         });
-
 
         app.MapControllers();
 

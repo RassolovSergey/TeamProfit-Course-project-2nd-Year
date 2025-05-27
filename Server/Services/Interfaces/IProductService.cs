@@ -1,18 +1,29 @@
-﻿// Server/Services/Interfaces/IProductService.cs
-using Server.DTO.Product;
+﻿using Server.DTO.Product;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Server.Services.Interfaces
 {
-    /// <summary>Бизнес-логика для работы с продуктами</summary>
     public interface IProductService
     {
-        Task<List<ProductDto>> GetAllAsync();
-        Task<ProductDto?> GetByIdAsync(int id);
-        Task<ProductDto> CreateAsync(CreateProductDto dto);
-        Task<ProductDto?> UpdateAsync(int id, UpdateProductDto dto);
-        Task<bool> DeleteAsync(int id);
-        Task<List<ProductDto>> GetByRewardAsync(int rewardId);
+        /// <summary>
+        /// Получить продукт по Id.
+        /// </summary>
+        Task<ProductDto?> GetByIdAsync(int productId);
+
+        /// <summary>
+        /// Создать продукт.
+        /// </summary>
+        Task<ProductDto> CreateAsync(int projectId, int rewardId, CreateProductDto dto);
+
+        /// <summary>
+        /// Обновить продукт.
+        /// </summary>
+        Task<ProductDto?> UpdateAsync(int productId, UpdateProductDto dto);
+
+        /// <summary>
+        /// Удалить продукт.
+        /// </summary>
+        Task<bool> DeleteAsync(int productId);
     }
 }

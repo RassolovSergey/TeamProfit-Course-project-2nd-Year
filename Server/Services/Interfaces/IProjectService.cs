@@ -1,17 +1,23 @@
-﻿using Server.DTO.Project;
+﻿using Server.DTO.Product;
+using Server.DTO.Project;
 
 namespace Server.Services.Interfaces
 {
     public interface IProjectService
     {
-        /// <summary>Получить список всех проектов</summary>
-        Task<List<ProjectDto>> GetAllAsync();
+                    // Мытоды работы со СПИСКАМИ
+
+        /// <summary>Получить список всех проектов пользователя</summary>
+        Task<List<ProjectDto>> GetByUserAsync(int userId);
+
+
+                    // Мытоды работы СУЩНОСТЬЮ
 
         /// <summary>Получить проект по идентификатору или null, если не найден</summary>
         Task<ProjectDto?> GetByIdAsync(int id);
 
         /// <summary>Создать новый проект и вернуть его DTO</summary>
-        Task<ProjectDto> CreateAsync(CreateProjectDto dto);
+        Task<ProjectDto> CreateAsync(CreateProjectDto dto, int creatorUserId);
 
         /// <summary>
         /// Обновить существующий проект,

@@ -1,78 +1,76 @@
-﻿// Server/Services/Implementations/ProductService.cs
-using AutoMapper;
+﻿using AutoMapper;
 using Data.Entities;
 using Server.DTO.Product;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Server.Services.Implementations
 {
-    /// <summary>Реализация сервиса продуктов</summary>
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _repo;
+        private readonly IProductRepository _productRepo;
         private readonly IMapper _mapper;
+        private readonly IRewardRepository _rewardRepo;
 
-        public ProductService(IProductRepository repo, IMapper mapper)
+        public ProductService(IProductRepository productRepo, IMapper mapper, IRewardRepository rewardRepo)
         {
-            _repo = repo;
+            _productRepo = productRepo;
             _mapper = mapper;
+            _rewardRepo = rewardRepo;
         }
 
-        public async Task<List<ProductDto>> GetAllAsync()
+        public async Task<ProductDto?> GetByIdAsync(int productId)
         {
-            var entities = await _repo.GetAllAsync();
-            return entities.Select(e =>
-            {
-                var dto = _mapper.Map<ProductDto>(e);
-                dto.RewardIds = e.Rewards.Select(r => r.Id).ToList();
-                return dto;
-            }).ToList();
+            var product = await _productRepo.GetByIdAsync(productId);
+            if (product == null)
+                return null;
+            return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<ProductDto?> GetByIdAsync(int id)
+        public async Task<ProductDto> CreateAsync(int projectId, int rewardId, CreateProductDto dto)
         {
-            var ent = await _repo.GetByIdAsync(id);
-            if (ent == null) return null;
-            var dto = _mapper.Map<ProductDto>(ent);
-            dto.RewardIds = ent.Rewards.Select(r => r.Id).ToList();
-            return dto;
+            // Получаем награду с продуктами
+            var reward = await _rewardRepo.GetWithProductsAsync(rewardId);
+            if (reward == null)
+                throw new KeyNotFoundException("Reward not found");
+
+            // Создаем продукт из DTO
+            var product = _mapper.Map<Product>(dto);
+
+            // Добавляем продукт в коллекцию награды
+            reward.Products.Add(product);
+
+            // Сохраняем изменения
+            await _rewardRepo.SaveChangesAsync();
+
+            // Возвращаем DTO созданного продукта
+            return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<ProductDto> CreateAsync(CreateProductDto dto)
+        public async Task<ProductDto?> UpdateAsync(int productId, UpdateProductDto dto)
         {
-            var ent = _mapper.Map<Product>(dto);
-            await _repo.AddAsync(ent);
-            await _repo.SaveChangesAsync();
-            return _mapper.Map<ProductDto>(ent);
+            var product = await _productRepo.GetByIdAsync(productId);
+            if (product == null)
+                return null;
+
+            _mapper.Map(dto, product);
+            await _productRepo.SaveChangesAsync();
+
+            return _mapper.Map<ProductDto>(product);
         }
 
-        public async Task<ProductDto?> UpdateAsync(int id, UpdateProductDto dto)
+        public async Task<bool> DeleteAsync(int productId)
         {
-            var ent = await _repo.GetByIdAsync(id);
-            if (ent == null) return null;
-            _mapper.Map(dto, ent);
-            await _repo.UpdateAsync(ent);
-            await _repo.SaveChangesAsync();
-            return _mapper.Map<ProductDto>(ent);
-        }
+            var product = await _productRepo.GetByIdAsync(productId);
+            if (product == null)
+                return false;
 
-        public async Task<bool> DeleteAsync(int id)
-        {
-            var exists = await _repo.GetByIdAsync(id) != null;
-            if (!exists) return false;
-            await _repo.DeleteAsync(id);
-            await _repo.SaveChangesAsync();
+            await _productRepo.DeleteAsync(productId);
+            await _productRepo.SaveChangesAsync();
+
             return true;
-        }
-
-        public async Task<List<ProductDto>> GetByRewardAsync(int rewardId)
-        {
-            var list = await _repo.GetByRewardIdAsync(rewardId);
-            return list.Select(ent => _mapper.Map<ProductDto>(ent)).ToList();
         }
     }
 }

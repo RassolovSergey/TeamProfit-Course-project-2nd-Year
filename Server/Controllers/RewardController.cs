@@ -1,102 +1,121 @@
-﻿// Server/Controllers/RewardsController.cs
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Server.DTO.Reward;
 using Server.DTO.Product;
+using Server.DTO.Reward;
 using Server.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Authorize] // все методы требуют валидного JWT
-    public class RewardsController : ControllerBase
+    [Route("api/projects/{projectId:int}/rewards")]
+    [Authorize]
+    public class RewardController : ControllerBase
     {
-        private readonly IRewardService _service;
+        private readonly IRewardService _rewardService;
 
-        public RewardsController(IRewardService service)
+        public RewardController(IRewardService rewardService)
         {
-            _service = service;
+            _rewardService = rewardService;
         }
 
-        /// <summary>GET api/rewards — все награды</summary>
+        // 1) Получить все награды проекта (участник или админ)
         [HttpGet]
-        public async Task<ActionResult<List<RewardDto>>> GetAll()
-            => Ok(await _service.GetAllAsync());
-
-        /// <summary>GET api/projects/{projectId}/rewards — все награды проекта</summary>
-        [HttpGet("/api/projects/{projectId}/rewards")]
-        [Authorize(Policy = "ProjectMember")] // любой участник проекта
-        public async Task<ActionResult<List<RewardDto>>> GetByProject(int projectId)
-            => Ok(await _service.GetByProjectAsync(projectId));
-
-        /// <summary>GET api/rewards/{id} — детали награды</summary>
-        [HttpGet("{id:int}")]
-        [Authorize(Policy = "ProjectMember")] // любой участник проекта
-        public async Task<ActionResult<RewardDto>> Get(int id)
+        public async Task<IActionResult> GetAll(int projectId)
         {
-            var dto = await _service.GetByIdAsync(id);
-            return dto is null ? NotFound() : Ok(dto);
+            var userId = GetUserId();
+            var rewards = await _rewardService.GetByProjectAsync(projectId, userId);
+            return Ok(rewards);
         }
 
-        /// <summary>POST api/projects/{projectId}/rewards — создать награду</summary>
-        [HttpPost("/api/projects/{projectId}/rewards")]
-        [Authorize(Policy = "ProjectAdmin")] // только администратор проекта
-        public async Task<ActionResult<RewardDto>> Create(
-            int projectId,
-            [FromBody] CreateRewardDto dto)
+        // 2) Добавить награду (только админ)
+        [HttpPost]
+        [Authorize(Policy = "ProjectAdmin")]
+        public async Task<IActionResult> Create(int projectId, [FromBody] CreateRewardDto dto)
         {
-            var created = await _service.CreateAsync(dto, projectId);
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            var userId = GetUserId();
+            var reward = await _rewardService.CreateRewardAsync(projectId, dto, userId);
+            return CreatedAtAction(nameof(GetById), new { projectId, rewardId = reward.Id }, reward);
         }
 
-        /// <summary>PUT api/rewards/{id} — обновить награду</summary>
-        [HttpPut("{id:int}")]
-        [Authorize(Policy = "ProjectAdmin")] // только администратор проекта
-        public async Task<IActionResult> Update(
-            int id,
-            [FromBody] UpdateRewardDto dto)
+        // Получить награду по Id
+        [HttpGet("{rewardId:int}")]
+        [Authorize(Policy = "ProjectMember")]
+        public async Task<IActionResult> GetById(int projectId, int rewardId)
         {
-            var updated = await _service.UpdateAsync(id, dto);
-            return updated is null ? NotFound() : Ok(updated);
+            var userId = GetUserId();
+            var rewards = await _rewardService.GetByProjectAsync(projectId, userId);
+            var reward = rewards.FirstOrDefault(r => r.Id == rewardId);
+            if (reward == null) return NotFound();
+            return Ok(reward);
         }
 
-        /// <summary>DELETE api/rewards/{id} — удалить награду</summary>
-        [HttpDelete("{id:int}")]
-        [Authorize(Policy = "ProjectAdmin")] // только администратор проекта
-        public async Task<IActionResult> Delete(int id)
-            => (await _service.DeleteAsync(id)) ? NoContent() : NotFound();
-
-
-        /// <summary>POST api/rewards/{rewardId}/products/{productId} — привязать продукт</summary>
-        [HttpPost("{rewardId:int}/products/{productId:int}")]
-        [Authorize(Policy = "ProjectAdmin")] // только администратор проекта
-        public async Task<IActionResult> AddProduct(int rewardId, int productId)
+        // 3) Обновить награду (только админ)
+        [HttpPut("{rewardId:int}")]
+        [Authorize(Policy = "ProjectAdmin")]
+        public async Task<IActionResult> Update(int rewardId, [FromBody] UpdateRewardDto dto)
         {
-            var ok = await _service.AddProductAsync(rewardId, productId);
-            return ok ? NoContent() : NotFound();
+            var userId = GetUserId();
+            var updated = await _rewardService.UpdateRewardAsync(rewardId, dto, userId);
+            if (updated == null) return NotFound();
+            return Ok(updated);
         }
 
-        /// <summary>DELETE api/rewards/{rewardId}/products/{productId} — открепить продукт</summary>
-        [HttpDelete("{rewardId:int}/products/{productId:int}")]
-        [Authorize(Policy = "ProjectAdmin")] // только администратор проекта
-        public async Task<IActionResult> RemoveProduct(
-            int rewardId,
-            int productId)
+        // 4) Удалить награду (только админ)
+        [HttpDelete("{rewardId:int}")]
+        [Authorize(Policy = "ProjectAdmin")]
+        public async Task<IActionResult> Delete(int rewardId)
         {
-            var ok = await _service.RemoveProductAsync(rewardId, productId);
-            return ok ? NoContent() : NotFound();
+            var userId = GetUserId();
+            var deleted = await _rewardService.DeleteRewardAsync(rewardId, userId);
+            if (!deleted) return NotFound();
+            return NoContent();
         }
 
-        /// <summary>GET api/rewards/{rewardId}/products — все продукты награды</summary>
+        // 5) Получить продукты награды (участник или админ)
         [HttpGet("{rewardId:int}/products")]
-        [Authorize(Policy = "ProjectMember")] // любой участник проекта
-        public async Task<ActionResult<List<ProductDto>>> GetProducts(int rewardId)
+        public async Task<IActionResult> GetProducts(int rewardId)
         {
-            var list = await _service.GetProductsByRewardAsync(rewardId);
-            return Ok(list);
+            var userId = GetUserId();
+            var products = await _rewardService.GetProductsByRewardAsync(rewardId, userId);
+            return Ok(products);
+        }
+
+        // 6) Добавить продукт к награде (только админ)
+        [HttpPost("{rewardId:int}/products")]
+        [Authorize(Policy = "ProjectAdmin")]
+        public async Task<IActionResult> AddProduct(int rewardId, [FromBody] CreateProductDto dto)
+        {
+            var userId = GetUserId();
+            var product = await _rewardService.AddProductToRewardAsync(rewardId, dto, userId);
+            return CreatedAtAction(nameof(GetProducts), new { rewardId }, product);
+        }
+
+        // 7) Обновить продукт по Id (только админ)
+        [HttpPut("{rewardId:int}/products/{productId:int}")]
+        [Authorize(Policy = "ProjectAdmin")]
+        public async Task<IActionResult> UpdateProduct(int productId, [FromBody] UpdateProductDto dto)
+        {
+            var userId = GetUserId();
+            var updated = await _rewardService.UpdateProductAsync(productId, dto, userId);
+            if (updated == null) return NotFound();
+            return Ok(updated);
+        }
+
+        // 8) Удалить продукт по Id (только админ)
+        [HttpDelete("{rewardId:int}/products/{productId:int}")]
+        [Authorize(Policy = "ProjectAdmin")]
+        public async Task<IActionResult> DeleteProduct(int productId)
+        {
+            var userId = GetUserId();
+            var deleted = await _rewardService.DeleteProductAsync(productId, userId);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+
+        private int GetUserId()
+        {
+            var raw = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(raw, out var userId) ? userId : throw new UnauthorizedAccessException();
         }
     }
 }

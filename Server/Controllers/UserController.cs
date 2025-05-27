@@ -1,6 +1,6 @@
-﻿// Server/Controllers/UserController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Server.DTO.User;
 using Server.Services.Interfaces;
 
@@ -8,19 +8,11 @@ namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize]  // все операции, кроме регистрации, требуют валидного JWT
+    [Authorize]  // все методы требуют валидного JWT
     public class UserController : ControllerBase
     {
         private readonly IUserService _svc;
-
         public UserController(IUserService svc) => _svc = svc;
-
-        /// <summary>
-        /// Получить список всех пользователей
-        /// </summary>
-        [HttpGet]
-        public async Task<ActionResult<List<UserDto>>> GetAll()
-            => Ok(await _svc.GetAllAsync());
 
         /// <summary>
         /// Получить пользователя по идентификатору
@@ -29,41 +21,52 @@ namespace Server.Controllers
         public async Task<ActionResult<UserDto>> Get(int id)
         {
             var dto = await _svc.GetByIdAsync(id);
-            return dto is null ? NotFound() : Ok(dto);
+            return dto is null
+                ? NotFound()
+                : Ok(dto);
         }
 
         /// <summary>
-        /// Создать нового пользователя (регистрация)  
-        /// Открыто для всех
-        /// </summary>
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto)
-        {
-            var created = await _svc.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
-        }
-
-        /// <summary>
-        /// Обновить данные пользователя  
-        /// Доступно авторизованному пользователю
+        /// Обновить свои данные пользователя
         /// </summary>
         [HttpPut("{id:int}")]
+        [Authorize]
         public async Task<ActionResult<UserDto>> Update(int id, [FromBody] UpdateUserDto dto)
         {
-            var updated = await _svc.UpdateAsync(id, dto);
-            return updated is null ? NotFound() : Ok(updated);
+            // здесь можно проверить, что id из URL совпадает с id в JWT (чтобы пользователь
+            // не смог подменить чужой профиль)
+            var claimId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            if (claimId != id)
+                return Forbid();
+
+            try
+            {
+                var updated = await _svc.UpdateAsync(id, dto);
+                return updated is null
+                    ? NotFound()
+                    : Ok(updated);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
+
         /// <summary>
-        /// Удалить пользователя  
-        /// Доступно авторизованному пользователю
+        /// Удалить свою учётную запись
         /// </summary>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(claim, out var currentUserId) || currentUserId != id)
+                return Forbid();
+
             var ok = await _svc.DeleteAsync(id);
-            return ok ? NoContent() : NotFound();
+            return ok
+                ? NoContent()
+                : NotFound();
         }
     }
 }

@@ -7,4 +7,9 @@
 	 <EnableDefaultScopedCssItems>true</EnableDefaultScopedCssItems>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Data\Data.csproj" />
+    <ProjectReference Include="..\Server\Server.csproj" />
+  </ItemGroup>
+
 </Project>

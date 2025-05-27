@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Data.Context;
 using Data.Entities;
-using System.Security.Cryptography;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Server.DTO.User;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,127 +16,192 @@ namespace Server.Services.Implementations
     // Реализация бизнес-логики для работы с пользователями
     public class UserService : IUserService
     {
-        // Ссылка на репозиторий для операций с базой данных по сущности User
         private readonly IUserRepository _repo;
-        // Ссылка на AutoMapper для маппинга между Entity и DTO
+        private readonly IProjectService _projectService;
+        private readonly AppDbContext _db;
         private readonly IMapper _mapper;
-        // Проверка на авторизацию пользователя
         private readonly IConfiguration _config;
 
-
-        // Конструктор, принимающий зависимости через DI
         public UserService(
-            IUserRepository repo, IMapper mapper, IConfiguration config)    // получаем IConfiguration из DI
+            IUserRepository repo,
+            IProjectService projectService,
+            AppDbContext db,
+            IMapper mapper,
+            IConfiguration config)
         {
             _repo = repo;
+            _projectService = projectService;
+            _db = db;
             _mapper = mapper;
             _config = config;
         }
 
-        // Метод для получения списка всех пользователей
         public async Task<List<UserDto>> GetAllAsync()
         {
-            var users = await _repo.GetAllAsync();      // Получаем все User из БД
-            return _mapper.Map<List<UserDto>>(users);   // Конвертируем список Entity в список DTO
+            var users = await _repo.GetAllAsync();
+            return _mapper.Map<List<UserDto>>(users);
         }
 
-        // Метод для получения пользователя по ID
         public async Task<UserDto?> GetByIdAsync(int id)
         {
-            var user = await _repo.GetByIdAsync(id);    // Ищем User по первичному ключу
-            return user is null 
-                ? null                                  // Если не найден — возвращаем null
-                : _mapper.Map<UserDto>(user);           // Иначе маппим Entity в DTO
+            var user = await _repo.GetByIdAsync(id);
+            return user is null
+                ? null
+                : _mapper.Map<UserDto>(user);
         }
 
-        // Метод для создания нового пользователя
         public async Task<UserDto> CreateAsync(CreateUserDto dto)
         {
-            // Конвертируем CreateUserDto в Entity User (без пароля)
             var user = _mapper.Map<User>(dto);
 
-            // Генерация соли и хэша
-            user.PasswordSalt = Convert.ToBase64String
-                (RandomNumberGenerator.GetBytes(16)); // Создаем 16 байт случайной соли и кодируем в Base64
-            
-            using var sha = SHA256.Create();    // Инициализируем SHA-256 для хеширования
-            var hashed = sha.ComputeHash
-                (Encoding.UTF8.GetBytes(dto.Password + user.PasswordSalt)); // Получаем байты от строки "пароль+соль"
-            user.HashPassword = Convert.ToBase64String(hashed);             // Кодируем хеш в Base64 и сохраняем
+            // генерируем соль и хеш
+            user.PasswordSalt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+            using var sha = SHA256.Create();
+            var hashed = sha.ComputeHash(Encoding.UTF8.GetBytes(dto.Password + user.PasswordSalt));
+            user.HashPassword = Convert.ToBase64String(hashed);
 
-            await _repo.AddAsync(user);         // Буферизуем добавление новой записи в БД
-            await _repo.SaveChangesAsync();     // Физически сохраняем изменения
+            await _repo.AddAsync(user);
+            await _repo.SaveChangesAsync();
 
-            return _mapper.Map<UserDto>(user);   // Возвращаем созданного пользователя в виде DTO
+            return _mapper.Map<UserDto>(user);
         }
 
-        // Метод для удаления пользователя по ID
+        /// <summary>
+        /// При удалении пользователя:
+        /// 1) удаляем все проекты, где он был администратором,
+        /// 2) чистим оставшиеся ссылки UserProject,
+        /// 3) удаляем самого пользователя.
+        /// </summary>
         public async Task<bool> DeleteAsync(int id)
         {
-            var exists = await _repo.GetByIdAsync(id) != null;  // Проверяем, существует ли пользователь
-            if (!exists) return false;      // Если нет — возвращаем false
+            var user = await _repo.GetByIdAsync(id);
+            if (user is null)
+                return false;
 
-            await _repo.DeleteAsync(id);    // Буферизуем удаление записи
-            await _repo.SaveChangesAsync(); // Сохраняем изменения
-            return true;                    // Возвращаем успешный результат
+            // 1) Список проектов, где этот пользователь – админ
+            var adminProjectIds = await _db.UserProjects
+                .Where(up => up.UserId == id && up.IsAdmin)
+                .Select(up => up.ProjectId)
+                .ToListAsync();
+
+            // 2) Удаляем каждый проект через сервис проектов
+            foreach (var projectId in adminProjectIds)
+            {
+                await _projectService.DeleteAsync(projectId);
+            }
+
+            // 3) Чистим любые оставшиеся ссылки этого пользователя
+            var leftovers = await _db.UserProjects
+                .Where(up => up.UserId == id)
+                .ToListAsync();
+            if (leftovers.Any())
+            {
+                _db.UserProjects.RemoveRange(leftovers);
+                await _db.SaveChangesAsync();
+            }
+
+            // 4) Удаляем самого пользователя
+            await _repo.DeleteAsync(id);
+            await _repo.SaveChangesAsync();
+
+            return true;
         }
 
-        // Метод для обновления данных пользователя
+        // Server/Services/Implementations/UserService.cs
         public async Task<UserDto?> UpdateAsync(int id, UpdateUserDto dto)
         {
-            // 1. Получаем существующего пользователя
             var user = await _repo.GetByIdAsync(id);
-            if (user is null)   
-                return null;        // Если не найден — возвращаем null
+            if (user is null) return null;
 
-            // 2. Накатываем изменения из DTO на существующую сущность
-            _mapper.Map(dto, user);
+            // 1) Обновляем простые поля
+            if (!string.IsNullOrEmpty(dto.Login)) user.Login = dto.Login;
+            if (!string.IsNullOrEmpty(dto.Email)) user.Email = dto.Email;
+            if (!string.IsNullOrEmpty(dto.Name)) user.Name = dto.Name;
+            if (!string.IsNullOrEmpty(dto.SurName)) user.SurName = dto.SurName;
+            if (dto.CurrencyId.HasValue) user.CurrencyId = dto.CurrencyId.Value;
 
-            // 3. Сохраняем изменения
-            await _repo.UpdateAsync(user);  // Буферизуем изменения в сущности
-            await _repo.SaveChangesAsync(); // Сохраняем изменения в БД
+            // 2) Если пользователь хочет сменить пароль
+            if (!string.IsNullOrEmpty(dto.NewPassword))
+            {
+                // 2.1) Проверяем, что CurrentPassword соответствует тому, что в базе
+                using var sha = SHA256.Create();
+                var currentHash = Convert.ToBase64String(
+                    sha.ComputeHash(Encoding.UTF8.GetBytes(dto.CurrentPassword! + user.PasswordSalt))
+                );
+                if (currentHash != user.HashPassword)
+                    throw new ArgumentException("Текущий пароль указан неверно.");
 
-            // 4. Возвращаем обновлённый DTO
-            return _mapper.Map<UserDto>(user);   // Конвертируем обновленную сущность в DTO и возвращаем
+                // 2.2) Генерируем новую соль и хеш для NewPassword
+                SetNewPassword(user, dto.NewPassword!);
+            }
+
+            // 3) Сохраняем изменения
+            await _repo.SaveChangesAsync();
+            return _mapper.Map<UserDto>(user);
         }
+
+
+        /// <summary>Проверяет, что plainPassword при хешировании совпадёт с user.HashPassword</summary>
+        private bool VerifyPassword(User user, string plainPassword)
+        {
+            using var sha = SHA256.Create();
+            var computed = sha.ComputeHash(Encoding.UTF8.GetBytes(plainPassword + user.PasswordSalt));
+            return Convert.ToBase64String(computed) == user.HashPassword;
+        }
+
+
+        /// <summary>
+        /// Генерирует соль и хеширует пароль через SHA-256 (пароль + соль).
+        /// </summary>
+        private void SetNewPassword(User user, string plainPassword)
+        {
+            // 1) соль — 16 случайных байт
+            var saltBytes = RandomNumberGenerator.GetBytes(16);
+            var salt = Convert.ToBase64String(saltBytes);
+
+            // 2) SHA-256(password + salt)
+            using var sha = SHA256.Create();
+            var hashBytes = sha.ComputeHash(Encoding.UTF8.GetBytes(plainPassword + salt));
+            var hash = Convert.ToBase64String(hashBytes);
+
+            // 3) сохраняем
+            user.PasswordSalt = salt;
+            user.HashPassword = hash;
+        }
+
 
         public async Task<string?> AuthenticateAsync(string login, string password)
         {
-            // 1. Попытка найти пользователя по логину
             var user = (await _repo.GetAllAsync())
-                           .FirstOrDefault(u => u.Login == login);
-            if (user == null)
-                return null;
+                .FirstOrDefault(u => u.Login == login);
+            if (user is null) return null;
 
-            // 2. Проверяем хеш пароля
             using var sha = SHA256.Create();
-            var computedHash = sha.ComputeHash(
+            var computed = sha.ComputeHash(
                 Encoding.UTF8.GetBytes(password + user.PasswordSalt));
-            var hashedInput = Convert.ToBase64String(computedHash);
-
-            if (hashedInput != user.HashPassword)
+            if (Convert.ToBase64String(computed) != user.HashPassword)
                 return null;
 
-            // 3. Формируем JWT-токен
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub,         user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Login),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email,                   user.Email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var expireMinutes = int.Parse(_config["Jwt:ExpireMinutes"] ?? "60");
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
                 signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler()
-                        .WriteToken(token);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

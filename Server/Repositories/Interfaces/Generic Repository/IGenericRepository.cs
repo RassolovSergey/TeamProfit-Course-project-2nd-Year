@@ -1,19 +1,16 @@
-﻿using System.Linq.Expressions;
+﻿using System.Linq.Expressions; // Позволяет использовать деревья выражений для гибких запросов.
 
 namespace Server.Repositories.Interfaces.Generic_Repository
 {
-    /// <summary>
-    /// Общий CRUD-контракт для любой сущности
-    /// </summary>
     public interface IGenericRepository<TEntity>
         where TEntity : class
     {
-        Task<List<TEntity>> GetAllAsync();
-        Task<TEntity?> GetByIdAsync(int id);
-        Task AddAsync(TEntity entity);
-        Task UpdateAsync(TEntity entity);
-        Task DeleteAsync(int id);
-        Task SaveChangesAsync();
-        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
+        Task<List<TEntity>> GetAllAsync();      // Асинхронно получает все сущности.
+        Task<TEntity?> GetByIdAsync(int id);    // Асинхронно получает сущность по ID.
+        Task AddAsync(TEntity entity);          // Асинхронно добавляет новую сущность.
+        Task UpdateAsync(TEntity entity);       // Асинхронно обновляет сущность.
+        Task DeleteAsync(int id);               // Асинхронно удаляет сущность по ID.
+        Task SaveChangesAsync();                // Асинхронно сохраняет изменения в хранилище.
+        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate); // Асинхронно проверяет наличие сущностей по предикату.
     }
 }

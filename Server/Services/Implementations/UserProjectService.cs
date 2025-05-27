@@ -50,14 +50,26 @@ namespace Server.Services.Implementations
             return _mapper.Map<List<UserProjectDto>>(filtered);
         }
 
-        public async Task<UserProjectDto> CreateAsync(CreateUserProjectDto dto)
+        // UserProjectService.cs
+        public async Task<UserProjectDto> CreateAsync(int projectId, CreateUserProjectDto dto)
         {
-            var e = _mapper.Map<UserProject>(dto);
-            e.IsAdmin = false;
-            await _repo.AddAsync(e);
+            var up = new UserProject
+            {
+                ProjectId = projectId,
+                UserId = dto.UserId,
+                TypeCooperation = dto.TypeCooperation,
+                FixedPrice = dto.FixedPrice,
+                PercentPrice = dto.PercentPrice,
+                // всегда по умолчанию: новый участник — не админ
+                IsAdmin = false
+            };
+
+            await _repo.AddAsync(up);
             await _repo.SaveChangesAsync();
-            return _mapper.Map<UserProjectDto>(e);
+
+            return _mapper.Map<UserProjectDto>(up);
         }
+
 
         public async Task<UserProjectDto?> UpdateAsync(int userId, int projectId, UpdateUserProjectDto dto)
         {
@@ -84,19 +96,12 @@ namespace Server.Services.Implementations
             return true;
         }
 
-        public async Task<bool> IsMemberAsync(int projectId, int userId)
-        {
-            return await _upRepo.AnyAsync(
-                up => up.ProjectId == projectId && up.UserId == userId);
-        }
+        public Task<bool> IsMemberAsync(int projectId, int userId)
+            => _upRepo.AnyAsync(up => up.ProjectId == projectId && up.UserId == userId);
 
-        public async Task<bool> IsAdminAsync(int projectId, int userId)
-        {
-            return await _upRepo.AnyAsync(
-                up => up.ProjectId == projectId
-                   && up.UserId == userId
-                   && up.IsAdmin);
-        }
+        public Task<bool> IsAdminAsync(int projectId, int userId)
+            => _upRepo.AnyAsync(up => up.ProjectId == projectId && up.UserId == userId && up.IsAdmin);
+
 
         public async Task<bool> AnyAsync(Expression<Func<UserProject, bool>> predicate) => await _upRepo.AnyAsync(predicate);
     }

@@ -52,8 +52,6 @@ namespace Server.Extensions
             services.AddScoped<ICostRepository, CostRepository>();
             services.AddScoped<ICurrencyRepository, CurrencyRepository>();
             services.AddScoped<IUserProjectRepository, UserProjectRepository>();
-            services.AddScoped<IUserProjectRepository, UserProjectRepository>();
-            services.AddScoped<IGenericRepository<Project>, ProjectRepository>();
             services.AddScoped<IGenericRepository<UserProject>, GenericRepository<UserProject>>();
             return services;
         }
@@ -71,25 +69,26 @@ namespace Server.Extensions
             services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<IUserProjectService, UserProjectService>();
             services.AddScoped<IProjectService, ProjectService>();
-            services.AddScoped<IProjectService, ProjectService>();
-            services.AddScoped<IUserProjectService, UserProjectService>();
             return services;
         }
 
         /// <summary>
         /// Регистрирует JWT-аутентификацию и авторизацию
         /// </summary>
+        /// <summary>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration config)
         {
             services
+                // регистрируем схему аутентификации по JWT
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
+                // и сам обработчик bearer-токенов
                 .AddJwtBearer(options =>
                 {
-                    options.RequireHttpsMetadata = false; // в проде рекомендую true
+                    options.RequireHttpsMetadata = false;
                     options.SaveToken = true;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -104,10 +103,9 @@ namespace Server.Extensions
                     };
                 });
 
-            services.AddAuthorization();
-
             return services;
         }
+
         /// <summary>
         /// Регистрирует всё, что связано с обновлением курсов валют
         /// </summary>
@@ -130,19 +128,22 @@ namespace Server.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Регистрирует политики авторизации для проектов и привязанные к ним хендлеры.
+        /// </summary>
         public static IServiceCollection AddProjectAuthorization(this IServiceCollection services)
         {
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ProjectMember", policy =>
-                    policy.Requirements.Add(new ProjectMemberRequirement()));
-                options.AddPolicy("ProjectAdmin", policy =>
-                    policy.Requirements.Add(new ProjectAdminRequirement()));
+                options.AddPolicy("ProjectMember", p =>
+                    p.Requirements.Add(new ProjectMemberRequirement()));
+                options.AddPolicy("ProjectAdmin", p =>
+                    p.Requirements.Add(new ProjectAdminRequirement()));
             });
 
-            // вместо AddSingleton — AddScoped или AddTransient
             services.AddScoped<IAuthorizationHandler, ProjectMemberHandler>();
             services.AddScoped<IAuthorizationHandler, ProjectAdminHandler>();
+
             return services;
         }
     }

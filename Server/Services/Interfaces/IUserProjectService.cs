@@ -19,7 +19,7 @@ namespace Server.Services.Interfaces
         Task<UserProjectDto?> GetAsync(int userId, int projectId);
 
         // Создать запись
-        Task<UserProjectDto> CreateAsync(CreateUserProjectDto dto);
+        Task<UserProjectDto> CreateAsync(int projectId, CreateUserProjectDto dto);
 
         // Обновить по составному ключу
         Task<UserProjectDto?> UpdateAsync(int userId, int projectId, UpdateUserProjectDto dto);

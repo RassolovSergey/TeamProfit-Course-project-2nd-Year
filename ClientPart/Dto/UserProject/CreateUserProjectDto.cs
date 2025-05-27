@@ -7,6 +7,9 @@ namespace Server.DTO.UserProject
     /// </summary>
     public class CreateUserProjectDto
     {
+        /// <summary>Идентификатор проекта</summary>
+        public int ProjectId { get; set; }
+
         /// <summary>Идентификатор пользователя</summary>
         public int UserId { get; set; }
 

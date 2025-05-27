@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Data.Enums;
 
 namespace Server.DTO.Project
 {
-    /// <summary>Модель для создания нового проекта</summary>
-    public class CreateProjectDto
+    /// <summary>Модель для обновления существующего проекта</summary>
+    public class UpdateProjectDto
     {
         [Required]
         public string Name { get; set; }
