@@ -1,8 +1,7 @@
 ﻿@page "/main"
-@using ClientPart.Pages.Modals
-@using ClientPart.Dto
+@using ClientPart.Dto.Project
+@using ClientPart.Dto.UserProject
 @using ClientPart.Services
-@using Server.DTO.Project
 @inject ClientPart.Services.AuthorizedHttpClientProvider AuthClientProvider
 
 <div class="main-container">
@@ -24,18 +23,28 @@
                 <div class="side-bottom">
                     <div class="inner-light-window">
 
-                        <!-- Mode-селектор -->
+                        <!-- 1) Блок фильтрации по роли (Mode-селектор) -->
                         <div class="mode-selector">
                             <span class="mode-label">Mode:</span>
                             <div class="mode-buttons">
-                                <button class="@GetModeBtnClass(true)" @onclick="() => SetMode(true)">Admin</button>
-                                <button class="@GetModeBtnClass(false)" @onclick="() => SetMode(false)">Member</button>
+                                <!-- Кнопки переключения режима Admin / Member -->
+                                <button class="@GetRoleBtnClass(RoleFilterType.Admin)"
+                                        @onclick="() => SetRoleFilter(RoleFilterType.Admin)">
+                                    Admin
+                                </button>
+                                <button class="@GetRoleBtnClass(RoleFilterType.Member)"
+                                        @onclick="() => SetRoleFilter(RoleFilterType.Member)">
+                                    Member
+                                </button>
                             </div>
                         </div>
+
+                        <!-- 2) Заголовок Your Project -->
                         <div class="section-title">
                             <span class="section-title">Your Project:</span>
                         </div>
-                        <!-- Your Project -->
+
+                        <!-- 3) Список отфильтрованных проектов -->
                         <div class="projects-list">
                             @if (isLoading)
                             {
@@ -43,228 +52,282 @@
                             }
                             else
                             {
-                                @foreach (var proj in userProjects)
+                                @if (filteredProjects.Count == 0)
                                 {
-                                    <button class="project-item @(proj.Id == selectedProjectId ? "selected" : "")"
-                                            @onclick="() => SelectProject(proj.Id)">
-                                        @proj.Name
-                                    </button>
+                                    <p>No projects found.</p>
+                                }
+                                else
+                                {
+                                    @foreach (var proj in filteredProjects)
+                                    {
+                                        <button class="project-item @(proj.Id == selectedProjectId ? "selected" : "")"
+                                                @onclick="() => SelectProject(proj.Id)">
+                                            @proj.Name
+                                        </button>
+                                    }
                                 }
                             }
                         </div>
 
-
-                        <!-- Filter Section -->
+                        <!-- 4) Блок фильтрации по статусу проекта -->
                         <div class="filter-selector">
-                            <button class="@GetFilterBtnClass(FilterType.Planned)"
-                                    @onclick="() => SetFilter(FilterType.Planned)">
+                            <button class="@GetFilterBtnClass(FilterType.PlannedProject)"
+                                    @onclick="() => SetFilter(FilterType.PlannedProject)">
                                 Planned Projects
                             </button>
-                            <button class="@GetFilterBtnClass(FilterType.Current)"
-                                    @onclick="() => SetFilter(FilterType.Current)">
+                            <button class="@GetFilterBtnClass(FilterType.CurrentProject)"
+                                    @onclick="() => SetFilter(FilterType.CurrentProject)">
                                 Current Projects
                             </button>
-                            <button class="@GetFilterBtnClass(FilterType.Completed)"
-                                    @onclick="() => SetFilter(FilterType.Completed)">
+                            <button class="@GetFilterBtnClass(FilterType.CompletedProject)"
+                                    @onclick="() => SetFilter(FilterType.CompletedProject)">
                                 Completed Projects
                             </button>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
+                    </div> <!-- inner-light-window -->
+                </div> <!-- side-bottom -->
+            </div> <!-- side-window -->
+        </div> <!-- main-col-left -->
         <!-- Правый столбец — 75% ширины -->
         <div class="main-col-right">
 
             <!-- Верхняя зона: 10% высоты -->
             <div class="right-top">
                 <div class="overview-block">
-                    <div class="overview-item">Admin</div>
-                    <div class="overview-item">Type: Planned</div>
-                    <div class="overview-item">Completed</div>
+
+                    <!-- 1) Имя выделенного проекта -->
+                    <div class="overview-item">
+                        @if (selectedProject != null)
+                        {
+                            <span>Project Name:&nbsp;<b>@selectedProject.Name</b></span>
+                        }
+                        else
+                        {
+                            <span>Project Name:&nbsp;<i>(none)</i></span>
+                        }
+                    </div>
+
+                    <!-- 2) Тип (статус) выделенного проекта -->
+                    <div class="overview-item">
+                        @if (selectedProject != null)
+                        {
+                            <span>Type Project:&nbsp;<b>@selectedProject.Status</b></span>
+                        }
+                        else
+                        {
+                            <span>Type Project:&nbsp;<i>(none)</i></span>
+                        }
+                    </div>
+
+                    <!-- 3) Роль текущего пользователя в этом проекте -->
+                    <div class="overview-item">
+                        @if (selectedProject != null)
+                        {
+                            @* Найдём запись из userProjectRelations по этому ProjectId *@
+                            var rel = userProjectRelations.FirstOrDefault(r => r.ProjectId == selectedProject.Id);
+                            if (rel != null)
+                            {
+                                <span>Your Role:&nbsp;<b>@(rel.IsAdmin ? "Admin" : "Member")</b></span>
+                            }
+                            else
+                            {
+                                <span>Your Role:&nbsp;<i>(no relation)</i></span>
+                            }
+                        }
+                        else
+                        {
+                            <span>Your Role:&nbsp;<i>(none)</i></span>
+                        }
+                    </div>
+
                 </div>
             </div>
 
             <!-- Нижняя зона -->
             <div class="right-bottom">
-                <!-- Три секции 30/40/40 с кликабельными блоками -->
-                <div class="rb-section rb-top30">
-                    <div class="rb-top30-left">
-                        <div class="rb-a50">
-                            <div class="rb-block" @onclick="() => ShowModal(1)">ProjectName</div>
-                        </div>
-                        <div class="rb-a50">
-                            <div class="rb-block" @onclick="() => ShowModal(2)">Team</div>
-                        </div>
-                    </div>
-                    <div class="rb-top30-right">
-                        <div class="rb-block" @onclick="() => ShowModal(3)">Backers</div>
-                    </div>
-                </div>
-
-                <div class="rb-section rb-mid40">
-                    <div class="rb-b50">
-                        <div class="rb-block" @onclick="() => ShowModal(4)">Income</div>
-                    </div>
-                    <div class="rb-b50">
-                        <div class="rb-block" @onclick="() => ShowModal(5)">Expenses</div>
-                    </div>
-                </div>
-
-                <div class="rb-section rb-bot40">
-                    <div class="rb-c50-left">
-                        <div class="rb-block" @onclick="() => ShowModal(6)">Project Profit</div>
-                    </div>
-                    <div class="rb-c50-right">
-                        <div class="rb-c-right">
-                            <div class="rb-c-right-item">
-                                <div class="rb-block" @onclick="() => ShowModal(7)">Taxes/Commission</div>
-                            </div>
-                            <div class="rb-c-right-item">
-                                <div class="rb-block" @onclick="() => ShowModal(8)">Project Plan</div>
-                            </div>
-                            <div class="rb-c-right-item">
-                                <div class="rb-block" @onclick="() => ShowModal(9)">Your Profit</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Здесь можно показать, например, дополнительные детали выбранного проекта -->
             </div>
 
-        </div>
-
-    </div>
-</div>
-
-@* Модальное окно *@
-@if (currentModal != 0)
-{
-    <div class="modal-overlay" @onclick="CloseModal">
-        <div class="modal-content" @onclick:stopPropagation>
-            <button class="modal-close" @onclick="CloseModal">×</button>
-            <!-- Делим окно на Header 10% и Body 90% -->
-            <div class="modal-header">
-                <h2>@GetModalTitle(currentModal)</h2>
-            </div>
-            <div class="modal-body">
-                @switch (currentModal)
-                {
-                    case 1:
-                        <ProjectNameModal />
-                        break;
-                    case 2:
-                        <TeamModal />
-                        break;
-                    case 3:
-                        <BackerModal />
-                        break;
-                    case 4:
-                        <IncomeModal />
-                        break;
-                    case 5:
-                        <ExpensesModal />
-                        break;
-                    case 6:
-                        <ProjectProfitModal />
-                        break;
-                    case 7:
-                        <TCModal />
-                        break;
-                    case 8:
-                        <YourPlanModal />
-                        break;
-                    case 9:
-                        <YourProfitModal />
-                        break;
-                    default:
-                        <div></div>
-                        break;
-                }
-            </div>
-        </div>
-    </div>
-}
-
+        </div> <!-- main-col-right -->
+    </div> <!-- main-box -->
+</div> <!-- main-container -->
 
 @code {
-
-    // --- Модальные окна ---
-    int currentModal = 0;
-    void ShowModal(int id) => currentModal = id;
-    void CloseModal() => currentModal = 0;
-    string GetModalTitle(int id) => id switch
-    {
-        1 => "Project Name",
-        2 => "Team",
-        3 => "Backer",
-        4 => "Income",
-        5 => "Expenses",
-        6 => "Project Profit",
-        7 => "Taxes/Commission",
-        8 => "Project Plan",
-        9 => "Your Profit",
-        _ => string.Empty
-    };
-
-    // --- Режим Admin / Member ---
-    bool isAdminMode = true;
-    void SetMode(bool admin)
-        => isAdminMode = admin;
-    string GetModeBtnClass(bool admin)
-        => admin == isAdminMode ? "mode-btn selected" : "mode-btn";
-
-    // --- Список проектов пользователя ---
-    private List<ProjectDto> userProjects = new();
-    private bool isLoading = true;
-    private int? selectedProjectId;
-
+    // ----------------------------------------------
+    // 1) HTTP-клиент с авторизацией (Provdider, ProtectedSessionStorage и т.д.)
+    // ----------------------------------------------
     [Inject] private AuthorizedHttpClientProvider ApiProvider { get; set; } = default!;
 
+    private List<ProjectDto> userProjects = new();              // все проекты текущего пользователя
+    private List<UserProjectDto> userProjectRelations = new();  // связи (User–Project) текущего пользователя
+    private List<ProjectDto> filteredProjects = new();          // отфильтрованный итоговый список
+    private int? selectedProjectId;  // id выбранного проекта (если нужно)
+    private bool isLoading = true;   // флаг загрузки данных
+    /// <summary>Хранит сам объект выбранного проекта (или null, если ни один не выбран).</summary>
+    private ProjectDto? selectedProject;
+
+    // ----------------------------------------------
+    // 3) Перечисления для фильтрации
+    // ----------------------------------------------
+    /// <summary>Фильтр по статусу проекта</summary>
+    enum FilterType
+    {
+        PlannedProject,    // запланированные
+        CurrentProject,    // текущие
+        CompletedProject   // завершенные
+    }
+
+    /// <summary>Фильтр по роли пользователя в проекте</summary>
+    enum RoleFilterType
+    {
+        Admin,   // пользователь — админ проекта
+        Member   // пользователь — просто участник проекта (не админ)
+    }
+
+    // текуще выбранный фильтр по статусу (по умолчанию PlannedProject)
+    private FilterType selectedFilter = FilterType.PlannedProject;
+
+    // текуще выбранный фильтр по роли (по умолчанию Admin)
+    private RoleFilterType selectedRoleFilter = RoleFilterType.Admin;
+
+    // ----------------------------------------------
+    // 4) Реакция на переключение фильтра по статусу
+    // ----------------------------------------------
+    void SetFilter(FilterType type)
+    {
+        selectedFilter = type;
+        ApplyFilters();
+    }
+    string GetFilterBtnClass(FilterType type)
+        => type == selectedFilter ? "filter-btn selected" : "filter-btn";
+
+    // ----------------------------------------------
+    // 5) Реакция на переключение фильтра по роли
+    // ----------------------------------------------
+    void SetRoleFilter(RoleFilterType role)
+    {
+        selectedRoleFilter = role;
+        ApplyFilters();
+    }
+    string GetRoleBtnClass(RoleFilterType role)
+        => role == selectedRoleFilter ? "mode-btn selected" : "mode-btn";
+
+    // ----------------------------------------------
+    // 6) Загрузка данных после первого рендеринга
+    // ----------------------------------------------
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
 
         var client = await ApiProvider.CreateClientAsync();
-        // предполагаемый эндпоинт, возвращающий только проекты текущего пользователя
-        userProjects = await client
-            .GetFromJsonAsync<List<ProjectDto>>("Projects/mine")
-            ?? new List<ProjectDto>();
 
-        // по умолчанию первый проект
-        if (userProjects.Count > 0)
-            selectedProjectId = userProjects[0].Id;
+        try
+        {
+            // 1) Загружаем все проекты текущего пользователя
+            userProjects = await client
+                .GetFromJsonAsync<List<ProjectDto>>("Projects/mine")
+                ?? new List<ProjectDto>();
 
-        isLoading = false;
+            // 2) Загружаем связи User-Project, чтобы знать, кем пользователь является
+            userProjectRelations = await client
+                .GetFromJsonAsync<List<UserProjectDto>>("UserProjects/mine")
+                ?? new List<UserProjectDto>();
+
+            // 3) Применяем начальную фильтрацию (по фильтрам, установленным по умолчанию)
+            ApplyFilters();
+
+            // 4) Если после фильтрации остались проекты, устанавливаем первый как выбранный
+            if (filteredProjects.Count > 0)
+            {
+                var first = filteredProjects[0];
+                SelectProject(first.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error loading data: " + ex.Message);
+            userProjects = new List<ProjectDto>();
+            userProjectRelations = new List<UserProjectDto>();
+            filteredProjects = new List<ProjectDto>();
+            selectedProject = null;
+            selectedProjectId = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    // ----------------------------------------------
+    // 7) Метод фильтрации (учитывается и статус, и роль)
+    // ----------------------------------------------
+    /// <summary>Фильтрация проектов по статусу и роли — здесь обновляется filteredProjects.</summary>
+    private void ApplyFilters()
+    {
+        filteredProjects = userProjects
+            .Where(p =>
+            {
+                // a) находим связь текущего пользователя с этим проектом
+                var rel = userProjectRelations.FirstOrDefault(r => r.ProjectId == p.Id);
+                if (rel == null)
+                    return false;
+
+                // b) проверяем “роль”:
+                bool roleMatches = selectedRoleFilter == RoleFilterType.Admin
+                    ? rel.IsAdmin
+                    : !rel.IsAdmin;
+
+                if (!roleMatches)
+                    return false;
+
+                // c) проверяем “статус”:
+                bool statusMatches = (int)p.Status == (int)selectedFilter;
+
+                return statusMatches;
+            })
+            .ToList();
+
+        // После того как изменился список filteredProjects, нужно, возможно, скорректировать выбранный проект:
+        if (filteredProjects.Count == 0)
+        {
+            selectedProject = null;
+            selectedProjectId = null;
+        }
+        else
+        {
+            // Если ранее выбранный проект пропал из новых filteredProjects, выбираем первый
+            if (selectedProjectId == null ||
+                !filteredProjects.Any(p => p.Id == selectedProjectId.Value))
+            {
+                var first = filteredProjects[0];
+                selectedProjectId = first.Id;
+                selectedProject = first;
+            }
+            else
+            {
+                // Если ранее выбранный проект всё ещё есть, просто обновим selectedProject
+                selectedProject = filteredProjects.First(p => p.Id == selectedProjectId.Value);
+            }
+        }
+
         StateHasChanged();
     }
 
+    // ----------------------------------------------
+    // 8) Обработчик нажатия на кнопку выбора проекта
+    // ----------------------------------------------
+    /// <summary>Выбор проекта по его Id. Здесь мы обновляем и selectedProjectId, и сам selectedProject.</summary>
     void SelectProject(int id)
     {
         selectedProjectId = id;
-        // здесь можно сохранять выбор в SessionStorage
-        // или сразу загружать детали выбранного проекта
-    }
 
-    // --- Фильтрация по статусу проекта ---
-    enum FilterType { Planned, Current, Completed }
-    FilterType selectedFilter = FilterType.Planned;
-    void SetFilter(FilterType type) => selectedFilter = type;
-    string GetFilterBtnClass(FilterType type) => type == selectedFilter ? "filter-btn selected" : "filter-btn";
+        // Находим объект ProjectDto в списке filteredProjects
+        selectedProject = filteredProjects.FirstOrDefault(p => p.Id == id);
 
-    // --- DTO для списка проектов ---
-    public class ProjectDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
-        public List<UserProjectDto> Participants { get; set; } = new();
-    }
-    public class UserProjectDto
-    {
-        public int ProjectId { get; set; }
-        public int UserId { get; set; }
-        public bool IsAdmin { get; set; }
+        // После смены выбранного проекта, обновляем UI:
+        StateHasChanged();
     }
 }
-

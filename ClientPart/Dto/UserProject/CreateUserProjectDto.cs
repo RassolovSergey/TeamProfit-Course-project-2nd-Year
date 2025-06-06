@@ -1,15 +1,12 @@
 ﻿using Data.Enums;
 
-namespace Server.DTO.UserProject
+namespace ClientPart.Dto.UserProject
 {
     /// <summary>
     /// Модель для добавления участника в проект
     /// </summary>
     public class CreateUserProjectDto
     {
-        /// <summary>Идентификатор проекта</summary>
-        public int ProjectId { get; set; }
-
         /// <summary>Идентификатор пользователя</summary>
         public int UserId { get; set; }
 

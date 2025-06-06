@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.DTO.UserProject;
 using Server.Services.Interfaces;
@@ -34,6 +36,20 @@ namespace Server.Controllers
                 new { projectId = created.ProjectId },
                 created);
         }
+
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetMine()
+        {
+            var rawUserId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                            ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(rawUserId, out var userId))
+                return Unauthorized();
+
+            var userProjects = await _service.GetByUserAsync(userId);
+            return Ok(userProjects);
+        }
+
 
         [HttpPut("{userId:int}/{projectId:int}")]
         [Authorize(Policy = "ProjectAdmin")]

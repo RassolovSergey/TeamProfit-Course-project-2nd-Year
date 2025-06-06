@@ -1,9 +1,13 @@
 ﻿// Server/Services/Implementations/UserProjectService.cs
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using AutoMapper;
 using Data.Context;
 using Data.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Server.DTO.UserProject;
 using Server.Repositories.Interfaces;
 using Server.Repositories.Interfaces.Generic_Repository;
@@ -35,6 +39,7 @@ namespace Server.Services.Implementations
             var all = await _repo.GetAllAsync();
             return _mapper.Map<List<UserProjectDto>>(all);
         }
+
 
         public async Task<UserProjectDto?> GetAsync(int userId, int projectId)
         {
@@ -104,5 +109,15 @@ namespace Server.Services.Implementations
 
 
         public async Task<bool> AnyAsync(Expression<Func<UserProject, bool>> predicate) => await _upRepo.AnyAsync(predicate);
+
+        public async Task<List<UserProjectDto>> GetByUserAsync(int userId)
+        {
+            var userProjects = await _db.UserProjects
+                                        .Where(up => up.UserId == userId)
+                                        .ToListAsync();
+
+            return _mapper.Map<List<UserProjectDto>>(userProjects);
+        }
+
     }
 }

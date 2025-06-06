@@ -34,6 +34,9 @@ namespace Server.Services.Interfaces
         /// Проверяет, существует ли запись UserProject по заданному условию.
         /// </summary>
         Task<bool> AnyAsync(Expression<Func<UserProject, bool>> predicate);
+
+        Task<List<UserProjectDto>> GetByUserAsync(int userId);
+
     }
 
 }

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Data.Enums;
 
-namespace Server.DTO.Project
+namespace ClientPart.Dto.Project
 {
     /// <summary>Модель для создания нового проекта</summary>
     public class CreateProjectDto
@@ -17,10 +17,6 @@ namespace Server.DTO.Project
 
         [Required]
         public int ProjectDuration { get; set; }
-
-
-        [Required]
-        public int CreatorUserId { get; set; }
 
         [Required]
         public int CurrencyId { get; set; }

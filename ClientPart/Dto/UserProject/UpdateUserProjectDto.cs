@@ -1,6 +1,6 @@
 ﻿using Data.Enums;
 
-namespace Server.DTO.UserProject
+namespace ClientPart.Dto.UserProject
 {
     /// <summary>
     /// Модель для обновления условий сотрудничества участника

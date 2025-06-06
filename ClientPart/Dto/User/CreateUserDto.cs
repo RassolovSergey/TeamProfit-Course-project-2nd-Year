@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Data.Enums;
 
-namespace Server.DTO.User
+namespace ClientPart.Dto.User
 {
     public class CreateUserDto
     {

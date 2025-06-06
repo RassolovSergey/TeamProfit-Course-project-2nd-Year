@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Data.Enums
+﻿namespace Data.Enums
 {
+    /// <summary>
     /// Статусы проекта
+    /// </summary>
     public enum ProjectStatus
     {
         PlannedProject,

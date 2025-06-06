@@ -1,4 +1,5 @@
-﻿using Server.DTO.Product;
+﻿using Data.Entities;
+using Server.DTO.Product;
 using Server.DTO.Reward;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -50,9 +51,21 @@ namespace Server.Services.Interfaces
         Task<ProductDto?> UpdateProductAsync(int productId, UpdateProductDto dto, int userId);
 
         /// <summary>
-        /// Удалить продукт из награды по Id.
-        /// Только администратор проекта.
+        /// Удалить продукт из конкретного вознаграждения (только админ проекта).
         /// </summary>
-        Task<bool> DeleteProductAsync(int productId, int userId);
+        Task<bool> DeleteProductFromRewardAsync(int rewardId, int productId, int userId);
+
+
+        Task<RewardDto?> GetByIdAsync(int rewardId);
+
+        Task<Reward> GetEntityByIdAsync(int rewardId);
+
+        Task<Product?> GetProductWithRewardsAsync(int productId);
+
+        /// <summary>
+        /// Удалить продукт по productId с проверкой прав пользователя.
+        /// </summary>
+        Task<bool> DeleteProductByIdAsync(int productId, int userId);
+
     }
 }

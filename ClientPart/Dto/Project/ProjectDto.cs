@@ -1,7 +1,7 @@
 ﻿using Data.Enums;
 using Server.DTO.UserProject;
 
-namespace Server.DTO.Project
+namespace ClientPart.Dto.Project
 {
     /// <summary>Проект, возвращаемый клиенту</summary>
     public class ProjectDto
